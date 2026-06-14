@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { useTheme } from "next-themes";
 import { Bell, Sun, Moon, ChevronRight, LogOut, Search, Menu } from "lucide-react";
 import type { Session } from "next-auth";
 
@@ -16,12 +17,14 @@ interface TopBarProps {
 
 export function TopBar({ collapsed, user, setMobileMenuOpen }: TopBarProps) {
   const pathname = usePathname();
-  const [darkMode, setDarkMode] = useState(true);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   const [profileName, setProfileName] = useState("");
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
   useEffect(() => {
+    setMounted(true);
     setProfileName(user?.name || "User");
     const loadProfile = () => {
       const savedName = localStorage.getItem("erp_profile_name");
@@ -101,10 +104,10 @@ export function TopBar({ collapsed, user, setMobileMenuOpen }: TopBarProps) {
 
         {/* Dark mode */}
         <button
-          onClick={() => setDarkMode(!darkMode)}
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
-          {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          {mounted && theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </button>
 
         {/* Divider */}

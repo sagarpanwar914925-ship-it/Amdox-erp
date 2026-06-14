@@ -118,7 +118,7 @@ export default function LandingPage() {
               <a
                 key={item}
                 href={`#${item.toLowerCase()}`}
-                className="hover:text-white transition-colors"
+                className="hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 {item}
               </a>
@@ -149,10 +149,10 @@ export default function LandingPage() {
             AI-Powered Enterprise ERP Platform
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6 animate-fade-in">
+          <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6 animate-fade-in">
             <span className="gradient-brand-text">AMDOX</span>
             <br />
-            <span className="text-white">AI Cloud ERP Suite</span>
+            <span className="text-slate-900 dark:text-white">AI Cloud ERP Suite</span>
           </h1>
 
           <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-10 animate-fade-in leading-relaxed">
@@ -186,12 +186,12 @@ export default function LandingPage() {
       <section id="features" className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 text-slate-900 dark:text-white">
               Every Business Function,
               <br />
               <span className="gradient-brand-text">One Platform</span>
             </h2>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+            <p className="text-slate-500 dark:text-slate-400 text-lg max-w-2xl mx-auto">
               12 fully-integrated modules covering every aspect of your enterprise operations.
             </p>
           </div>
@@ -206,7 +206,7 @@ export default function LandingPage() {
                   >
                     <Icon className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="font-bold text-white mb-2">{feature.title}</h3>
+                  <h3 className="font-bold text-slate-900 dark:text-white mb-2">{feature.title}</h3>
                   <p className="text-sm text-slate-400 leading-relaxed">{feature.desc}</p>
                 </div>
               );
@@ -245,11 +245,11 @@ export default function LandingPage() {
               <Brain className="w-4 h-4" />
               AI-Powered Intelligence
             </div>
-            <h2 className="text-4xl font-bold text-white mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-6">
               Machine Learning at the
               <span className="gradient-brand-text"> Core</span>
             </h2>
-            <p className="text-slate-400 leading-relaxed mb-8">
+            <p className="text-slate-500 dark:text-slate-400 leading-relaxed mb-8">
               AMDOX uses advanced ML models to forecast demand, detect anomalies, optimize inventory,
               predict cash flow, and surface insights — automatically.
             </p>
@@ -285,7 +285,7 @@ export default function LandingPage() {
               ].map((item) => (
                 <div key={item.sku} className="flex items-center justify-between p-3 glass rounded-xl">
                   <div>
-                    <div className="text-sm font-medium text-white">{item.product}</div>
+                    <div className="text-sm font-medium text-slate-900 dark:text-white">{item.product}</div>
                     <div className="text-xs text-slate-500">{item.sku}</div>
                   </div>
                   <div className="text-right">
@@ -302,7 +302,7 @@ export default function LandingPage() {
       {/* ─── TESTIMONIALS ─── */}
       <section className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold text-center text-white mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-slate-900 dark:text-white mb-16">
             Trusted by <span className="gradient-brand-text">Enterprise Teams</span>
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
@@ -315,7 +315,7 @@ export default function LandingPage() {
                 </div>
                 <p className="text-slate-300 text-sm leading-relaxed mb-6">&ldquo;{t.text}&rdquo;</p>
                 <div>
-                  <div className="font-semibold text-white text-sm">{t.name}</div>
+                  <div className="font-semibold text-slate-900 dark:text-white text-sm">{t.name}</div>
                   <div className="text-xs text-slate-500">{t.role}</div>
                 </div>
               </div>
@@ -329,7 +329,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center glass-card p-16 relative overflow-hidden">
           <div className="absolute inset-0 gradient-mesh pointer-events-none" />
           <div className="relative z-10">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
+            <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-6">
               Ready to Transform
               <br />
               <span className="gradient-brand-text">Your Enterprise?</span>
@@ -365,15 +365,15 @@ export default function LandingPage() {
             <div className="w-7 h-7 rounded-lg gradient-brand flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-white">AMDOX Technologies</span>
+            <span className="font-bold text-slate-900 dark:text-white">AMDOX Technologies</span>
           </div>
           <p className="text-sm text-slate-500">
             © 2024 AMDOX Technologies. AI-Powered Cloud ERP Suite.
           </p>
           <div className="flex gap-4 text-sm text-slate-500">
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms</a>
-            <a href="#" className="hover:text-white transition-colors">Security</a>
+            <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy</a>
+            <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Terms</a>
+            <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Security</a>
           </div>
         </div>
       </footer>
