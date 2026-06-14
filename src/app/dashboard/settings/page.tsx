@@ -126,7 +126,7 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1">Email Address</label>
-                  <input type="email" className="form-input w-full" defaultValue={session?.user?.email || ""} disabled className="form-input w-full bg-slate-50 cursor-not-allowed" />
+                  <input type="email" defaultValue={session?.user?.email || ""} disabled className="form-input w-full bg-slate-50 cursor-not-allowed" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1">Role</label>
