@@ -1,0 +1,1192 @@
+// AMDOX Technologies - AI Powered Cloud ERP Suite
+// Complete Prisma Schema - Production Ready
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// MULTI-TENANCY & ORGANIZATION
+// ============================================================
+
+model Tenant {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  domain        String?  @unique
+  logo          String?
+  plan          Plan     @default(STARTER)
+  status        TenantStatus @default(ACTIVE)
+  maxUsers      Int      @default(10)
+  maxStorage    BigInt   @default(10737418240) // 10GB
+  settings      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  organizations Organization[]
+  users         User[]
+  subscriptions Subscription[]
+  auditLogs     AuditLog[]
+
+  @@map("tenants")
+}
+
+model Organization {
+  id           String   @id @default(cuid())
+  tenantId     String
+  name         String
+  code         String
+  address      String?
+  city         String?
+  country      String?
+  currency     String   @default("USD")
+  fiscalYear   String   @default("JAN-DEC")
+  taxId        String?
+  phone        String?
+  email        String?
+  website      String?
+  logo         String?
+  settings     Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant        Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  departments   Department[]
+  employees     Employee[]
+  vendors       Vendor[]
+  customers     Customer[]
+  accounts      Account[]
+  warehouses    Warehouse[]
+  projects      Project[]
+  budgets       Budget[]
+
+  @@unique([tenantId, code])
+  @@map("organizations")
+}
+
+model Department {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  code           String
+  parentId       String?
+  managerId      String?
+  costCenter     String?
+  budget         Decimal? @db.Decimal(18, 2)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  parent       Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id])
+  children     Department[] @relation("DepartmentHierarchy")
+  manager      Employee?    @relation("DepartmentManager", fields: [managerId], references: [id])
+  employees    Employee[]
+
+  @@unique([organizationId, code])
+  @@map("departments")
+}
+
+model Subscription {
+  id          String   @id @default(cuid())
+  tenantId    String
+  plan        Plan
+  status      SubscriptionStatus @default(ACTIVE)
+  startDate   DateTime
+  endDate     DateTime?
+  amount      Decimal  @db.Decimal(10, 2)
+  currency    String   @default("USD")
+  billingCycle BillingCycle @default(MONTHLY)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+// ============================================================
+// USERS & AUTHENTICATION
+// ============================================================
+
+model User {
+  id            String   @id @default(cuid())
+  tenantId      String
+  email         String
+  name          String
+  avatar        String?
+  phone         String?
+  passwordHash  String?
+  role          Role     @default(EMPLOYEE)
+  status        UserStatus @default(ACTIVE)
+  mfaEnabled    Boolean  @default(false)
+  mfaSecret     String?
+  lastLogin     DateTime?
+  loginAttempts Int      @default(0)
+  lockedUntil   DateTime?
+  preferences   Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sessions        Session[]
+  employee        Employee?
+  notifications   Notification[]
+  auditLogs       AuditLog[]
+  approvals       Approval[]       @relation("ApproverUser")
+  requestedApprovals Approval[]    @relation("RequesterUser")
+
+  @@unique([tenantId, email])
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  token        String   @unique
+  refreshToken String?  @unique
+  ipAddress    String?
+  userAgent    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// ============================================================
+// HR & PAYROLL MODULE
+// ============================================================
+
+model Employee {
+  id               String   @id @default(cuid())
+  userId           String?  @unique
+  organizationId   String
+  departmentId     String?
+  employeeCode     String
+  firstName        String
+  lastName         String
+  email            String
+  phone            String?
+  avatar           String?
+  dateOfBirth      DateTime?
+  gender           Gender?
+  maritalStatus    MaritalStatus?
+  nationality      String?
+  nationalId       String?
+  address          String?
+  city             String?
+  country          String?
+  designation      String?
+  employmentType   EmploymentType @default(FULL_TIME)
+  joinDate         DateTime
+  confirmationDate DateTime?
+  exitDate         DateTime?
+  status           EmployeeStatus @default(ACTIVE)
+  managerId        String?
+  bankAccount      String?
+  bankName         String?
+  taxId            String?
+  salary           Decimal? @db.Decimal(18, 2)
+  currency         String   @default("USD")
+  documents        Json?
+  skills           String[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User?            @relation(fields: [userId], references: [id])
+  organization     Organization     @relation(fields: [organizationId], references: [id])
+  department       Department?      @relation(fields: [departmentId], references: [id])
+  manager          Employee?        @relation("EmployeeManager", fields: [managerId], references: [id])
+  subordinates     Employee[]       @relation("EmployeeManager")
+  managedDepts     Department[]     @relation("DepartmentManager")
+  attendances      Attendance[]
+  leaveRequests    LeaveRequest[]
+  payrollRecords   PayrollRecord[]
+  projectMembers   ProjectMember[]
+  performanceReviews PerformanceReview[]
+  taskAssignments  Task[]           @relation("TaskAssignee")
+
+  @@unique([organizationId, employeeCode])
+  @@map("employees")
+}
+
+model Attendance {
+  id           String   @id @default(cuid())
+  employeeId   String
+  date         DateTime @db.Date
+  clockIn      DateTime?
+  clockOut     DateTime?
+  breakMinutes Int      @default(0)
+  overtime     Decimal  @default(0) @db.Decimal(4, 2)
+  status       AttendanceStatus @default(PRESENT)
+  notes        String?
+  location     Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, date])
+  @@map("attendance")
+}
+
+model LeaveType {
+  id           String   @id @default(cuid())
+  name         String
+  code         String   @unique
+  daysAllowed  Int
+  carryForward Boolean  @default(false)
+  maxCarryDays Int      @default(0)
+  isPaid       Boolean  @default(true)
+  color        String?
+  createdAt    DateTime @default(now())
+
+  leaveRequests LeaveRequest[]
+
+  @@map("leave_types")
+}
+
+model LeaveRequest {
+  id          String   @id @default(cuid())
+  employeeId  String
+  leaveTypeId String
+  startDate   DateTime @db.Date
+  endDate     DateTime @db.Date
+  days        Decimal  @db.Decimal(4, 1)
+  reason      String?
+  status      ApprovalStatus @default(PENDING)
+  approvedBy  String?
+  approvedAt  DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  employee  Employee  @relation(fields: [employeeId], references: [id])
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  @@map("leave_requests")
+}
+
+model PayrollRecord {
+  id              String   @id @default(cuid())
+  employeeId      String
+  period          String   // e.g., "2024-01"
+  basicSalary     Decimal  @db.Decimal(18, 2)
+  allowances      Decimal  @default(0) @db.Decimal(18, 2)
+  deductions      Decimal  @default(0) @db.Decimal(18, 2)
+  tax             Decimal  @default(0) @db.Decimal(18, 2)
+  netPay          Decimal  @db.Decimal(18, 2)
+  currency        String   @default("USD")
+  status          PayrollStatus @default(DRAFT)
+  processedAt     DateTime?
+  paidAt          DateTime?
+  payslipUrl      String?
+  breakdown       Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@unique([employeeId, period])
+  @@map("payroll_records")
+}
+
+model PerformanceReview {
+  id          String   @id @default(cuid())
+  employeeId  String
+  reviewerId  String?
+  period      String
+  rating      Decimal  @db.Decimal(3, 1)
+  goals       Json?
+  feedback    String?
+  status      ReviewStatus @default(DRAFT)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@map("performance_reviews")
+}
+
+// ============================================================
+// FINANCE MODULE
+// ============================================================
+
+model Account {
+  id             String   @id @default(cuid())
+  organizationId String
+  code           String
+  name           String
+  type           AccountType
+  subType        String?
+  parentId       String?
+  currency       String   @default("USD")
+  balance        Decimal  @default(0) @db.Decimal(18, 2)
+  isActive       Boolean  @default(true)
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  parent         Account?        @relation("AccountHierarchy", fields: [parentId], references: [id])
+  children       Account[]       @relation("AccountHierarchy")
+  journalLines   JournalLine[]
+
+  @@unique([organizationId, code])
+  @@map("accounts")
+}
+
+model JournalEntry {
+  id             String   @id @default(cuid())
+  reference      String   @unique
+  date           DateTime @db.Date
+  description    String
+  currency       String   @default("USD")
+  exchangeRate   Decimal  @default(1) @db.Decimal(10, 6)
+  status         JournalStatus @default(DRAFT)
+  type           JournalType   @default(MANUAL)
+  sourceId       String?
+  sourceType     String?
+  postedAt       DateTime?
+  postedBy       String?
+  reversedFrom   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  lines JournalLine[]
+
+  @@map("journal_entries")
+}
+
+model JournalLine {
+  id             String   @id @default(cuid())
+  journalEntryId String
+  accountId      String
+  description    String?
+  debit          Decimal  @default(0) @db.Decimal(18, 2)
+  credit         Decimal  @default(0) @db.Decimal(18, 2)
+  currency       String   @default("USD")
+  exchangeRate   Decimal  @default(1) @db.Decimal(10, 6)
+  tags           String[]
+
+  journalEntry JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  account      Account      @relation(fields: [accountId], references: [id])
+
+  @@map("journal_lines")
+}
+
+model Customer {
+  id             String   @id @default(cuid())
+  organizationId String
+  code           String
+  name           String
+  email          String?
+  phone          String?
+  address        String?
+  city           String?
+  country        String?
+  currency       String   @default("USD")
+  creditLimit    Decimal  @default(0) @db.Decimal(18, 2)
+  taxId          String?
+  status         CustomerStatus @default(ACTIVE)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  invoices     Invoice[]
+
+  @@unique([organizationId, code])
+  @@map("customers")
+}
+
+model Invoice {
+  id             String   @id @default(cuid())
+  organizationId String?
+  customerId     String
+  number         String   @unique
+  date           DateTime @db.Date
+  dueDate        DateTime @db.Date
+  currency       String   @default("USD")
+  exchangeRate   Decimal  @default(1) @db.Decimal(10, 6)
+  subtotal       Decimal  @db.Decimal(18, 2)
+  tax            Decimal  @default(0) @db.Decimal(18, 2)
+  discount       Decimal  @default(0) @db.Decimal(18, 2)
+  total          Decimal  @db.Decimal(18, 2)
+  paidAmount     Decimal  @default(0) @db.Decimal(18, 2)
+  status         InvoiceStatus @default(DRAFT)
+  notes          String?
+  terms          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  customer Customer     @relation(fields: [customerId], references: [id])
+  items    InvoiceItem[]
+  payments Payment[]
+
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  productId   String?
+  description String
+  quantity    Decimal @db.Decimal(18, 4)
+  unitPrice   Decimal @db.Decimal(18, 2)
+  tax         Decimal @default(0) @db.Decimal(5, 2)
+  discount    Decimal @default(0) @db.Decimal(5, 2)
+  total       Decimal @db.Decimal(18, 2)
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_items")
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  invoiceId   String?
+  billId      String?
+  amount      Decimal  @db.Decimal(18, 2)
+  currency    String   @default("USD")
+  method      PaymentMethod @default(BANK_TRANSFER)
+  reference   String?
+  date        DateTime @db.Date
+  status      PaymentStatus @default(COMPLETED)
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  invoice Invoice? @relation(fields: [invoiceId], references: [id])
+  bill    Bill?    @relation(fields: [billId], references: [id])
+
+  @@map("payments")
+}
+
+model Bill {
+  id          String   @id @default(cuid())
+  vendorId    String
+  number      String   @unique
+  date        DateTime @db.Date
+  dueDate     DateTime @db.Date
+  currency    String   @default("USD")
+  subtotal    Decimal  @db.Decimal(18, 2)
+  tax         Decimal  @default(0) @db.Decimal(18, 2)
+  total       Decimal  @db.Decimal(18, 2)
+  paidAmount  Decimal  @default(0) @db.Decimal(18, 2)
+  status      BillStatus @default(DRAFT)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vendor   Vendor      @relation(fields: [vendorId], references: [id])
+  items    BillItem[]
+  payments Payment[]
+
+  @@map("bills")
+}
+
+model BillItem {
+  id          String  @id @default(cuid())
+  billId      String
+  productId   String?
+  description String
+  quantity    Decimal @db.Decimal(18, 4)
+  unitPrice   Decimal @db.Decimal(18, 2)
+  tax         Decimal @default(0) @db.Decimal(5, 2)
+  total       Decimal @db.Decimal(18, 2)
+
+  bill Bill @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  @@map("bill_items")
+}
+
+model Budget {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  fiscalYear     String
+  period         BudgetPeriod @default(ANNUAL)
+  status         BudgetStatus @default(DRAFT)
+  totalAmount    Decimal  @db.Decimal(18, 2)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization  @relation(fields: [organizationId], references: [id])
+  lines        BudgetLine[]
+
+  @@map("budgets")
+}
+
+model BudgetLine {
+  id         String  @id @default(cuid())
+  budgetId   String
+  accountId  String?
+  department String?
+  month      Int?
+  amount     Decimal @db.Decimal(18, 2)
+  actual     Decimal @default(0) @db.Decimal(18, 2)
+  notes      String?
+
+  budget Budget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+
+  @@map("budget_lines")
+}
+
+// ============================================================
+// SUPPLY CHAIN MODULE
+// ============================================================
+
+model Vendor {
+  id             String   @id @default(cuid())
+  organizationId String
+  code           String
+  name           String
+  email          String?
+  phone          String?
+  address        String?
+  city           String?
+  country        String?
+  currency       String   @default("USD")
+  taxId          String?
+  rating         Decimal  @default(0) @db.Decimal(3, 1)
+  paymentTerms   Int      @default(30)
+  status         VendorStatus @default(ACTIVE)
+  category       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  bills          Bill[]
+  purchaseOrders PurchaseOrder[]
+  contracts      VendorContract[]
+
+  @@unique([organizationId, code])
+  @@map("vendors")
+}
+
+model VendorContract {
+  id          String   @id @default(cuid())
+  vendorId    String
+  title       String
+  startDate   DateTime @db.Date
+  endDate     DateTime @db.Date
+  value       Decimal  @db.Decimal(18, 2)
+  currency    String   @default("USD")
+  status      ContractStatus @default(ACTIVE)
+  terms       String?
+  documentUrl String?
+  createdAt   DateTime @default(now())
+
+  vendor Vendor @relation(fields: [vendorId], references: [id])
+
+  @@map("vendor_contracts")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  sku         String   @unique
+  name        String
+  description String?
+  category    String?
+  unit        String   @default("pcs")
+  costPrice   Decimal  @db.Decimal(18, 2)
+  salePrice   Decimal  @db.Decimal(18, 2)
+  taxRate     Decimal  @default(0) @db.Decimal(5, 2)
+  isActive    Boolean  @default(true)
+  images      String[]
+  tags        String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  inventoryItems InventoryItem[]
+  forecasts      DemandForecast[]
+
+  @@map("products")
+}
+
+model Warehouse {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  code           String
+  address        String?
+  city           String?
+  country        String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  inventoryItems InventoryItem[]
+  stockTransfers StockTransfer[] @relation("FromWarehouse")
+  stockReceived  StockTransfer[] @relation("ToWarehouse")
+
+  @@unique([organizationId, code])
+  @@map("warehouses")
+}
+
+model InventoryItem {
+  id            String   @id @default(cuid())
+  productId     String
+  warehouseId   String
+  quantity      Decimal  @default(0) @db.Decimal(18, 4)
+  reservedQty   Decimal  @default(0) @db.Decimal(18, 4)
+  reorderLevel  Decimal  @default(0) @db.Decimal(18, 4)
+  reorderQty    Decimal  @default(0) @db.Decimal(18, 4)
+  lastUpdated   DateTime @default(now())
+
+  product   Product   @relation(fields: [productId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@unique([productId, warehouseId])
+  @@map("inventory_items")
+}
+
+model StockTransfer {
+  id              String   @id @default(cuid())
+  fromWarehouseId String
+  toWarehouseId   String
+  productId       String
+  quantity        Decimal  @db.Decimal(18, 4)
+  status          TransferStatus @default(PENDING)
+  reference       String?
+  notes           String?
+  transferDate    DateTime @db.Date
+  createdAt       DateTime @default(now())
+
+  fromWarehouse Warehouse @relation("FromWarehouse", fields: [fromWarehouseId], references: [id])
+  toWarehouse   Warehouse @relation("ToWarehouse", fields: [toWarehouseId], references: [id])
+
+  @@map("stock_transfers")
+}
+
+model PurchaseOrder {
+  id          String   @id @default(cuid())
+  vendorId    String
+  number      String   @unique
+  date        DateTime @db.Date
+  expectedDate DateTime? @db.Date
+  currency    String   @default("USD")
+  subtotal    Decimal  @db.Decimal(18, 2)
+  tax         Decimal  @default(0) @db.Decimal(18, 2)
+  total       Decimal  @db.Decimal(18, 2)
+  status      POStatus @default(DRAFT)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vendor  Vendor        @relation(fields: [vendorId], references: [id])
+  items   POItem[]
+  receipts GoodsReceipt[]
+
+  @@map("purchase_orders")
+}
+
+model POItem {
+  id              String  @id @default(cuid())
+  purchaseOrderId String
+  productId       String?
+  description     String
+  quantity        Decimal @db.Decimal(18, 4)
+  receivedQty     Decimal @default(0) @db.Decimal(18, 4)
+  unitPrice       Decimal @db.Decimal(18, 2)
+  tax             Decimal @default(0) @db.Decimal(5, 2)
+  total           Decimal @db.Decimal(18, 2)
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  @@map("po_items")
+}
+
+model GoodsReceipt {
+  id              String   @id @default(cuid())
+  purchaseOrderId String
+  receiptNumber   String   @unique
+  date            DateTime @db.Date
+  status          ReceiptStatus @default(PENDING)
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+
+  @@map("goods_receipts")
+}
+
+model DemandForecast {
+  id         String   @id @default(cuid())
+  productId  String
+  forecastDate DateTime @db.Date
+  forecastQty  Decimal @db.Decimal(18, 4)
+  actualQty    Decimal? @db.Decimal(18, 4)
+  model        String  @default("prophet")
+  confidence   Decimal @db.Decimal(5, 2)
+  mape         Decimal? @db.Decimal(5, 2)
+  createdAt    DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("demand_forecasts")
+}
+
+// ============================================================
+// PROJECT MANAGEMENT MODULE
+// ============================================================
+
+model Project {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  code           String
+  description    String?
+  startDate      DateTime @db.Date
+  endDate        DateTime @db.Date
+  status         ProjectStatus @default(PLANNING)
+  priority       Priority @default(MEDIUM)
+  budget         Decimal  @db.Decimal(18, 2)
+  actualCost     Decimal  @default(0) @db.Decimal(18, 2)
+  progress       Int      @default(0)
+  managerId      String?
+  color          String?
+  tags           String[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization    @relation(fields: [organizationId], references: [id])
+  tasks        Task[]
+  members      ProjectMember[]
+  milestones   Milestone[]
+
+  @@unique([organizationId, code])
+  @@map("projects")
+}
+
+model ProjectMember {
+  id         String   @id @default(cuid())
+  projectId  String
+  employeeId String
+  role       String?
+  allocation Int      @default(100) // percentage
+  joinedAt   DateTime @default(now())
+
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@unique([projectId, employeeId])
+  @@map("project_members")
+}
+
+model Task {
+  id           String   @id @default(cuid())
+  projectId    String
+  parentId     String?
+  title        String
+  description  String?
+  assigneeId   String?
+  status       TaskStatus @default(TODO)
+  priority     Priority   @default(MEDIUM)
+  startDate    DateTime?  @db.Date
+  dueDate      DateTime?  @db.Date
+  completedAt  DateTime?
+  estimatedHrs Decimal?   @db.Decimal(6, 1)
+  actualHrs    Decimal?   @db.Decimal(6, 1)
+  progress     Int        @default(0)
+  tags         String[]
+  order        Int        @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parent    Task?     @relation("TaskHierarchy", fields: [parentId], references: [id])
+  subtasks  Task[]    @relation("TaskHierarchy")
+  assignee  Employee? @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  dependencies TaskDependency[] @relation("DependentTask")
+  dependents   TaskDependency[] @relation("DependsOnTask")
+
+  @@map("tasks")
+}
+
+model TaskDependency {
+  id          String @id @default(cuid())
+  taskId      String
+  dependsOnId String
+  type        DependencyType @default(FINISH_TO_START)
+
+  task      Task @relation("DependentTask", fields: [taskId], references: [id], onDelete: Cascade)
+  dependsOn Task @relation("DependsOnTask", fields: [dependsOnId], references: [id])
+
+  @@unique([taskId, dependsOnId])
+  @@map("task_dependencies")
+}
+
+model Milestone {
+  id        String   @id @default(cuid())
+  projectId String
+  title     String
+  date      DateTime @db.Date
+  status    MilestoneStatus @default(PENDING)
+  notes     String?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("milestones")
+}
+
+// ============================================================
+// APPROVAL WORKFLOWS
+// ============================================================
+
+model Approval {
+  id           String   @id @default(cuid())
+  type         ApprovalType
+  sourceId     String
+  sourceType   String
+  requesterId  String
+  approverId   String?
+  status       ApprovalStatus @default(PENDING)
+  level        Int      @default(1)
+  notes        String?
+  requestedAt  DateTime @default(now())
+  resolvedAt   DateTime?
+
+  requester User  @relation("RequesterUser", fields: [requesterId], references: [id])
+  approver  User? @relation("ApproverUser", fields: [approverId], references: [id])
+
+  @@map("approvals")
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  type      NotificationType @default(INFO)
+  channel   NotificationChannel @default(IN_APP)
+  isRead    Boolean  @default(false)
+  readAt    DateTime?
+  data      Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model NotificationTemplate {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  subject  String
+  body     String
+  channel  NotificationChannel
+  variables String[]
+  isActive Boolean @default(true)
+
+  @@map("notification_templates")
+}
+
+// ============================================================
+// AUDIT & COMPLIANCE
+// ============================================================
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  tenantId   String?
+  userId     String?
+  action     String
+  entity     String
+  entityId   String?
+  oldValues  Json?
+  newValues  Json?
+  ipAddress  String?
+  userAgent  String?
+  timestamp  DateTime @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id])
+
+  @@index([tenantId, timestamp])
+  @@index([entity, entityId])
+  @@map("audit_logs")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum Plan {
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+  CUSTOM
+}
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+  TRIAL
+  EXPIRED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PAST_DUE
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+}
+
+enum Role {
+  SUPER_ADMIN
+  TENANT_ADMIN
+  FINANCE_MANAGER
+  HR_MANAGER
+  PROJECT_MANAGER
+  SUPPLY_CHAIN_MANAGER
+  EMPLOYEE
+  VIEWER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
+  FREELANCE
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  ON_LEAVE
+  SUSPENDED
+  TERMINATED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  HALF_DAY
+  HOLIDAY
+  WEEKEND
+}
+
+enum PayrollStatus {
+  DRAFT
+  APPROVED
+  PROCESSING
+  PAID
+  CANCELLED
+}
+
+enum ReviewStatus {
+  DRAFT
+  SUBMITTED
+  COMPLETED
+}
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+enum JournalStatus {
+  DRAFT
+  POSTED
+  REVERSED
+}
+
+enum JournalType {
+  MANUAL
+  INVOICE
+  PAYMENT
+  PAYROLL
+  DEPRECIATION
+  ADJUSTMENT
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum BillStatus {
+  DRAFT
+  APPROVED
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  CASH
+  CHECK
+  CREDIT_CARD
+  ONLINE
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum BudgetPeriod {
+  ANNUAL
+  QUARTERLY
+  MONTHLY
+}
+
+enum BudgetStatus {
+  DRAFT
+  APPROVED
+  ACTIVE
+  CLOSED
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  BLACKLISTED
+}
+
+enum VendorStatus {
+  ACTIVE
+  INACTIVE
+  BLACKLISTED
+}
+
+enum ContractStatus {
+  DRAFT
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+enum TransferStatus {
+  PENDING
+  IN_TRANSIT
+  COMPLETED
+  CANCELLED
+}
+
+enum POStatus {
+  DRAFT
+  SENT
+  PARTIAL
+  RECEIVED
+  CANCELLED
+}
+
+enum ReceiptStatus {
+  PENDING
+  PARTIAL
+  COMPLETE
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+  CANCELLED
+}
+
+enum DependencyType {
+  FINISH_TO_START
+  START_TO_START
+  FINISH_TO_FINISH
+  START_TO_FINISH
+}
+
+enum MilestoneStatus {
+  PENDING
+  COMPLETED
+  MISSED
+}
+
+enum ApprovalType {
+  PURCHASE_ORDER
+  LEAVE_REQUEST
+  EXPENSE
+  INVOICE
+  PAYROLL
+  JOURNAL
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  ALERT
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  SMS
+  WEBHOOK
+}
