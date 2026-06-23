@@ -11,7 +11,7 @@ import {
 import { getStatusColor, getPriorityColor, percentage } from "@/lib/utils";
 import { Modal } from "@/components/ui/modal";
 
-const PROJECTS = [
+const INITIAL_PROJECTS = [
   {
     id: "PRJ-001", name: "ERP System Migration", code: "ERP-MIG",
     status: "ACTIVE", priority: "CRITICAL",
@@ -54,7 +54,7 @@ const PROJECTS = [
   },
 ];
 
-const TASKS = [
+const INITIAL_TASKS = [
   { id: "T-001", project: "ERP-MIG", title: "Setup database schema", assignee: "Sarah W.", priority: "CRITICAL", due: "Dec 10", status: "DONE", hrs: 24 },
   { id: "T-002", project: "ERP-MIG", title: "Build authentication module", assignee: "Robert K.", priority: "HIGH", due: "Dec 15", status: "IN_PROGRESS", hrs: 40 },
   { id: "T-003", project: "MOB-APP", title: "Design UI components", assignee: "James C.", priority: "HIGH", due: "Dec 12", status: "IN_REVIEW", hrs: 32 },
@@ -64,7 +64,7 @@ const TASKS = [
 ];
 
 // Gantt chart rows
-const GANTT_ROWS = [
+const INITIAL_GANTT_ROWS = [
   { project: "ERP Migration", start: 1, duration: 6, color: "#6366f1", tasks: ["DB Schema", "Auth", "Finance", "HR", "Testing", "Deployment"] },
   { project: "Mobile App", start: 2, duration: 3, color: "#22c55e", tasks: ["UI Design", "API", "QA"] },
   { project: "Data Center", start: 1, duration: 4, color: "#f59e0b", tasks: ["Planning", "Hardware", "Config", "Migration"] },
@@ -87,10 +87,42 @@ export default function ProjectsPage() {
   const [activeTab, setActiveTab] = useState<"projects" | "tasks" | "gantt">(tabParam || "projects");
   const [viewItem, setViewItem] = useState<{ type: "project" | "task"; data: any } | null>(null);
 
+  const [projects, setProjects] = useState(INITIAL_PROJECTS);
+  const [tasks, setTasks] = useState(INITIAL_TASKS);
+  const [ganttRows, setGanttRows] = useState(INITIAL_GANTT_ROWS);
+
   useEffect(() => {
     if (tabParam && ["projects", "tasks", "gantt"].includes(tabParam)) {
       setActiveTab(tabParam);
     }
+
+    import("@/app/actions/projects").then(async (actions) => {
+      try {
+        const [projs, tsks] = await Promise.all([
+          actions.getProjects(),
+          actions.getTasks()
+        ]);
+        
+        if (projs && projs.length > 0) {
+          setProjects(projs);
+          // Dynamically compute Gantt rows
+          const gRows = projs.map((p: any, i: number) => ({
+            project: p.name,
+            start: (i % 3) + 1,
+            duration: Math.max(1, Math.floor(Math.random() * 5) + 2),
+            color: p.color,
+            tasks: ["Planning", "Execution", "Review"]
+          }));
+          setGanttRows(gRows);
+        }
+        
+        if (tsks && tsks.length > 0) {
+          setTasks(tsks);
+        }
+      } catch (err) {
+        console.error("Failed to fetch project data:", err);
+      }
+    });
   }, [tabParam]);
 
   const handleTabChange = (tab: typeof activeTab) => {
@@ -128,7 +160,7 @@ export default function ProjectsPage() {
                 <Icon className="w-5 h-5 text-white" />
               </div>
               <div className="text-2xl font-extrabold text-slate-900">{kpi.value}</div>
-              <div className="text-sm text-slate-600 mt-1">{kpi.title}</div>
+              <div className="text-sm text-black mt-1">{kpi.title}</div>
               <div className={`text-xs font-semibold mt-1 flex items-center gap-1 ${kpi.up ? "text-emerald-400" : "text-red-400"}`}>
                 <ArrowUpRight className="w-3 h-3" />{kpi.change}
               </div>
@@ -144,7 +176,7 @@ export default function ProjectsPage() {
             key={tab.id}
             onClick={() => handleTabChange(tab.id as any)}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-              activeTab === tab.id ? "gradient-brand text-white shadow" : "text-slate-600 hover:text-slate-900"
+              activeTab === tab.id ? "gradient-brand text-white shadow" : "text-black hover:text-slate-900"
             }`}
           >
             {tab.label}
@@ -155,7 +187,7 @@ export default function ProjectsPage() {
       {/* Projects Tab */}
       {activeTab === "projects" && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {PROJECTS.map((proj) => {
+          {projects.map((proj) => {
             const budgetUsed = percentage(proj.actual, proj.budget);
             return (
               <div key={proj.id} className="glass-card p-6">
@@ -169,7 +201,7 @@ export default function ProjectsPage() {
                     </div>
                     <div>
                       <div className="font-bold text-slate-900 text-sm">{proj.name}</div>
-                      <div className="text-xs text-slate-500">{proj.code}</div>
+                      <div className="text-xs text-black">{proj.code}</div>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1">
@@ -182,7 +214,7 @@ export default function ProjectsPage() {
                   {/* Progress */}
                   <div>
                     <div className="flex justify-between text-sm mb-1.5">
-                      <span className="text-slate-600">Progress</span>
+                      <span className="text-black">Progress</span>
                       <span className="font-bold text-slate-900">{proj.progress}%</span>
                     </div>
                     <div className="progress-bar">
@@ -196,7 +228,7 @@ export default function ProjectsPage() {
                   {/* Budget */}
                   <div>
                     <div className="flex justify-between text-sm mb-1.5">
-                      <span className="text-slate-600">Budget Used</span>
+                      <span className="text-black">Budget Used</span>
                       <span className={`font-bold ${budgetUsed > 80 ? "text-red-400" : "text-slate-900"}`}>
                         {budgetUsed}%
                       </span>
@@ -216,21 +248,21 @@ export default function ProjectsPage() {
                   <div className="grid grid-cols-3 gap-2 pt-1">
                     <div className="text-center">
                       <div className="text-sm font-bold text-slate-900">{proj.tasks.done}/{proj.tasks.total}</div>
-                      <div className="text-xs text-slate-500">Tasks</div>
+                      <div className="text-xs text-black">Tasks</div>
                     </div>
                     <div className="text-center">
                       <div className="text-sm font-bold text-slate-900">{proj.team}</div>
-                      <div className="text-xs text-slate-500">Members</div>
+                      <div className="text-xs text-black">Members</div>
                     </div>
                     <div className="text-center">
                       <div className="text-sm font-bold" style={{ color: proj.color }}>
                         ${(proj.budget / 1000).toFixed(0)}K
                       </div>
-                      <div className="text-xs text-slate-500">Budget</div>
+                      <div className="text-xs text-black">Budget</div>
                     </div>
                   </div>
 
-                  <div className="flex justify-between text-xs text-slate-500 pt-1">
+                  <div className="flex justify-between text-xs text-black pt-1">
                     <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {proj.start}</span>
                     <span>→</span>
                     <span>{proj.end}</span>
@@ -254,7 +286,7 @@ export default function ProjectsPage() {
             </div>
             <div className="text-center">
               <div className="font-semibold text-slate-900">New Project</div>
-              <div className="text-xs text-slate-500">Create from template or scratch</div>
+              <div className="text-xs text-black">Create from template or scratch</div>
             </div>
           </div>
         </div>
@@ -265,7 +297,7 @@ export default function ProjectsPage() {
         <div className="space-y-4">
           <div className="flex gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
               <input className="form-input pl-10" placeholder="Search tasks..." />
             </div>
             <button className="btn btn-primary btn-sm"><Plus className="w-4 h-4" /> Add Task</button>
@@ -286,19 +318,19 @@ export default function ProjectsPage() {
                 </tr>
               </thead>
               <tbody>
-                {TASKS.map((task) => (
+                {tasks.map((task) => (
                   <tr key={task.id}>
                     <td>
                       <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${task.status === "DONE" ? "bg-emerald-400" : task.status === "IN_PROGRESS" ? "bg-blue-400" : task.status === "IN_REVIEW" ? "bg-amber-400" : "bg-slate-400"}`} />
                         <span className="font-medium text-slate-900 text-sm">{task.title}</span>
                       </div>
-                      <span className="text-xs text-slate-500 ml-4">{task.id}</span>
+                      <span className="text-xs text-black ml-4">{task.id}</span>
                     </td>
                     <td className="font-mono text-indigo-500 text-sm">{task.project}</td>
-                    <td className="text-slate-700 text-sm">{task.assignee}</td>
+                    <td className="text-black text-sm">{task.assignee}</td>
                     <td><span className={`badge ${getPriorityColor(task.priority)}`}>{task.priority}</span></td>
-                    <td className="text-slate-600 text-sm">{task.due}</td>
+                    <td className="text-black text-sm">{task.due}</td>
                     <td className="font-mono text-sm">{task.hrs}h</td>
                     <td><span className={`badge ${getStatusColor(task.status)}`}>{task.status.replace("_", " ")}</span></td>
                     <td>
@@ -320,9 +352,9 @@ export default function ProjectsPage() {
             <div className="min-w-[700px]">
               {/* Month headers */}
               <div className="grid gap-0 mb-4" style={{ gridTemplateColumns: "200px repeat(6, 1fr)" }}>
-                <div className="text-xs text-slate-500 font-semibold uppercase pb-2">Project</div>
+                <div className="text-xs text-black font-semibold uppercase pb-2">Project</div>
                 {MONTHS.map((month) => (
-                  <div key={month} className="text-xs text-slate-500 font-semibold uppercase text-center pb-2 border-l border-white/5">
+                  <div key={month} className="text-xs text-black font-semibold uppercase text-center pb-2 border-l border-white/5">
                     {month}
                   </div>
                 ))}
@@ -330,7 +362,7 @@ export default function ProjectsPage() {
 
               {/* Project rows */}
               <div className="space-y-3">
-                {GANTT_ROWS.map((row) => (
+                {ganttRows.map((row) => (
                   <div key={row.project} className="grid gap-0 items-center" style={{ gridTemplateColumns: "200px repeat(6, 1fr)" }}>
                     <div className="text-sm font-semibold text-slate-900 pr-4 truncate">{row.project}</div>
                     <div className="col-span-6 relative h-10">
@@ -359,8 +391,8 @@ export default function ProjectsPage() {
 
               {/* Legend */}
               <div className="flex gap-6 mt-6 pt-4 border-t border-white/5">
-                {GANTT_ROWS.map((row) => (
-                  <div key={row.project} className="flex items-center gap-2 text-xs text-slate-600">
+                {ganttRows.map((row) => (
+                  <div key={row.project} className="flex items-center gap-2 text-xs text-black">
                     <div className="w-3 h-3 rounded" style={{ background: row.color }} />
                     {row.project}
                   </div>
@@ -382,38 +414,38 @@ export default function ProjectsPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-xl font-bold text-slate-900">{viewItem.data.name}</h3>
-                <p className="text-slate-500 font-mono text-sm">{viewItem.data.code}</p>
+                <p className="text-black font-mono text-sm">{viewItem.data.code}</p>
               </div>
               <span className={`badge ${getStatusColor(viewItem.data.status)}`}>{viewItem.data.status.replace("_", " ")}</span>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Project Manager</p>
+                <p className="text-xs text-black mb-1">Project Manager</p>
                 <p className="font-semibold">{viewItem.data.manager}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Priority</p>
+                <p className="text-xs text-black mb-1">Priority</p>
                 <span className={`badge ${getPriorityColor(viewItem.data.priority)}`}>{viewItem.data.priority}</span>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Timeline</p>
+                <p className="text-xs text-black mb-1">Timeline</p>
                 <p className="font-semibold text-sm">{viewItem.data.start} → {viewItem.data.end}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Team Size</p>
+                <p className="text-xs text-black mb-1">Team Size</p>
                 <p className="font-semibold">{viewItem.data.team} members</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Budget</p>
+                <p className="text-xs text-black mb-1">Budget</p>
                 <p className="font-semibold">${(viewItem.data.budget / 1000).toFixed(0)}K</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Actual Spent</p>
+                <p className="text-xs text-black mb-1">Actual Spent</p>
                 <p className="font-semibold">${(viewItem.data.actual / 1000).toFixed(0)}K</p>
               </div>
               <div className="col-span-2 p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Overall Progress ({viewItem.data.progress}%)</p>
+                <p className="text-xs text-black mb-1">Overall Progress ({viewItem.data.progress}%)</p>
                 <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
                   <div className="h-2 rounded-full" style={{ width: `${viewItem.data.progress}%`, background: viewItem.data.color }}></div>
                 </div>
@@ -436,27 +468,27 @@ export default function ProjectsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Task ID</p>
+                <p className="text-xs text-black mb-1">Task ID</p>
                 <p className="font-semibold font-mono text-sm">{viewItem.data.id}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Project Code</p>
+                <p className="text-xs text-black mb-1">Project Code</p>
                 <p className="font-semibold font-mono text-indigo-600 text-sm">{viewItem.data.project}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Assignee</p>
+                <p className="text-xs text-black mb-1">Assignee</p>
                 <p className="font-semibold">{viewItem.data.assignee}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Priority</p>
+                <p className="text-xs text-black mb-1">Priority</p>
                 <span className={`badge ${getPriorityColor(viewItem.data.priority)}`}>{viewItem.data.priority}</span>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Due Date</p>
+                <p className="text-xs text-black mb-1">Due Date</p>
                 <p className="font-semibold">{viewItem.data.due}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Estimated Hours</p>
+                <p className="text-xs text-black mb-1">Estimated Hours</p>
                 <p className="font-semibold">{viewItem.data.hrs}h</p>
               </div>
             </div>

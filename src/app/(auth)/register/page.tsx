@@ -176,7 +176,7 @@ export default function RegisterPage() {
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
                 Welcome!
               </h2>
-              <p className="text-slate-600 dark:text-slate-400 mb-4">
+              <p className="text-black dark:text-black mb-4">
                 {successMessage}
               </p>
               <div className="flex justify-center">
@@ -200,7 +200,7 @@ export default function RegisterPage() {
             </div>
           </div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">AMDOX ERP</h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-2">
+          <p className="text-black dark:text-black mt-2">
             Create Your Account
           </p>
         </div>
@@ -326,7 +326,7 @@ export default function RegisterPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-black hover:text-black"
                   >
                     {showPassword ? (
                       <EyeOff size={14} />
@@ -338,7 +338,7 @@ export default function RegisterPage() {
                 {errors.password && (
                   <p className="text-xs text-red-500">{errors.password}</p>
                 )}
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-black mt-1">
                   Min 8 chars: uppercase, lowercase, number, special char
                 </p>
               </div>
@@ -366,7 +366,7 @@ export default function RegisterPage() {
                     onClick={() =>
                       setShowConfirmPassword(!showConfirmPassword)
                     }
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-black hover:text-black"
                   >
                     {showConfirmPassword ? (
                       <EyeOff size={14} />
@@ -392,7 +392,7 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   className="mt-1"
                 />
-                <label htmlFor="acceptTerms" className="text-xs text-slate-600 dark:text-slate-400 cursor-pointer">
+                <label htmlFor="acceptTerms" className="text-xs text-black dark:text-black cursor-pointer">
                   I agree to the{" "}
                   <Link href="/terms" className="text-blue-600 hover:underline">
                     Terms of Service
@@ -421,7 +421,7 @@ export default function RegisterPage() {
             </form>
 
             {/* Footer */}
-            <p className="text-center text-sm text-slate-600 dark:text-slate-400 mt-4">
+            <p className="text-center text-sm text-black dark:text-black mt-4">
               Already have an account?{" "}
               <Link
                 href="/login"

@@ -80,10 +80,35 @@ export default function FinancePage() {
   const [activeTab, setActiveTab] = useState<"overview" | "gl" | "ap" | "ar" | "budgets" | "reports">(tabParam || "overview");
   const [invoices, setInvoices] = useState(INITIAL_INVOICES);
   const [bills, setBills] = useState(INITIAL_BILLS);
+  const [accounts, setAccounts] = useState(ACCOUNTS);
+  const [ledger, setLedger] = useState(GENERAL_LEDGER);
   const [viewItem, setViewItem] = useState<{ type: "invoice" | "bill"; data: any } | null>(null);
   const [editItem, setEditItem] = useState<{ type: "invoice" | "bill"; data: any } | null>(null);
   const [viewReport, setViewReport] = useState<string | null>(null);
   const invoiceRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    import("@/app/actions/finance").then(async (actions) => {
+      try {
+        const [invs, bls, accs, jrnls] = await Promise.all([
+          actions.getInvoices(),
+          actions.getBills(),
+          actions.getAccounts(),
+          actions.getJournalEntries()
+        ]);
+        if (invs && invs.length > 0) setInvoices(invs);
+        if (bls && bls.length > 0) setBills(bls);
+        if (accs && accs.length > 0) {
+          setAccounts(accs.map((a: any) => ({
+            name: a.name, code: a.code, balance: Number(a.balance), type: a.type, change: 0
+          })));
+        }
+        if (jrnls && jrnls.length > 0) setLedger(jrnls);
+      } catch (err) {
+        console.error("Failed to fetch finance data:", err);
+      }
+    });
+  }, []);
 
   const handleDeleteInvoice = (id: string) => {
     setInvoices(invoices.filter(inv => inv.id !== id));
@@ -221,7 +246,7 @@ export default function FinancePage() {
                 <Icon className="w-5 h-5 text-white" />
               </div>
               <div className="text-2xl font-extrabold text-slate-900">{kpi.value}</div>
-              <div className="text-sm text-slate-600 mt-1">{kpi.title}</div>
+              <div className="text-sm text-black mt-1">{kpi.title}</div>
               <div className={`text-xs font-semibold mt-1.5 flex items-center gap-1 ${kpi.up ? "text-emerald-400" : "text-red-400"}`}>
                 {kpi.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                 {kpi.change} vs last month
@@ -242,7 +267,7 @@ export default function FinancePage() {
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                 activeTab === tab.id
                   ? "gradient-brand text-white shadow"
-                  : "text-slate-600 hover:text-slate-900"
+                  : "text-black hover:text-slate-900"
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -286,13 +311,13 @@ export default function FinancePage() {
             <div className="glass-card p-6">
               <h3 className="section-title text-base mb-4">Chart of Accounts</h3>
               <div className="space-y-2">
-                {ACCOUNTS.map((acc) => (
+                {accounts.map((acc) => (
                   <div key={acc.code} className="flex items-center justify-between p-3 glass rounded-xl hover:bg-white/[0.04] transition-all cursor-pointer">
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-mono text-slate-500 w-12">{acc.code}</span>
+                      <span className="text-xs font-mono text-black w-12">{acc.code}</span>
                       <div>
                         <div className="text-sm font-semibold text-slate-900">{acc.name}</div>
-                        <div className="text-xs text-slate-500">{acc.type}</div>
+                        <div className="text-xs text-black">{acc.type}</div>
                       </div>
                     </div>
                     <div className="text-right">
@@ -371,8 +396,8 @@ export default function FinancePage() {
                     <td className="font-mono text-indigo-400 text-sm">{inv.id}</td>
                     <td className="font-medium text-slate-900">{inv.customer}</td>
                     <td className="text-right font-bold text-slate-900">{formatCurrency(inv.amount)}</td>
-                    <td className="text-slate-600">{inv.date}</td>
-                    <td className="text-slate-600">{inv.due}</td>
+                    <td className="text-black">{inv.date}</td>
+                    <td className="text-black">{inv.due}</td>
                     <td>
                       <span className={`badge ${getStatusColor(inv.status)}`}>
                         {inv.status}
@@ -438,8 +463,8 @@ export default function FinancePage() {
                     <td className="font-mono text-amber-400 text-sm">{bill.id}</td>
                     <td className="font-medium text-slate-900">{bill.vendor}</td>
                     <td className="text-right font-bold text-slate-900">{formatCurrency(bill.amount)}</td>
-                    <td className="text-slate-600">{bill.date}</td>
-                    <td className="text-slate-600">{bill.due}</td>
+                    <td className="text-black">{bill.date}</td>
+                    <td className="text-black">{bill.due}</td>
                     <td>
                       <span className={`badge ${getStatusColor(bill.status)}`}>
                         {bill.status}
@@ -489,7 +514,7 @@ export default function FinancePage() {
           <div className="glass-card overflow-hidden">
             <div className="p-4 border-b border-slate-200">
               <div className="relative w-full max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
                 <input type="text" placeholder="Search accounts, references..." className="form-input pl-10 w-full" />
               </div>
             </div>
@@ -506,13 +531,13 @@ export default function FinancePage() {
                 </tr>
               </thead>
               <tbody>
-                {GENERAL_LEDGER.map((entry, idx) => (
+                {ledger.map((entry: any, idx: number) => (
                   <tr key={`${entry.id}-${idx}`}>
-                    <td className="text-slate-600">{entry.date}</td>
+                    <td className="text-black">{entry.date}</td>
                     <td className="font-mono text-indigo-400 text-sm">{entry.id}</td>
                     <td className="font-semibold text-slate-900">{entry.account}</td>
-                    <td className="text-slate-600">{entry.desc}</td>
-                    <td className="font-mono text-xs text-slate-500">{entry.ref}</td>
+                    <td className="text-black">{entry.desc}</td>
+                    <td className="font-mono text-xs text-black">{entry.ref}</td>
                     <td className="text-right font-bold text-slate-900">{entry.debit ? formatCurrency(entry.debit) : "-"}</td>
                     <td className="text-right font-bold text-slate-900">{entry.credit ? formatCurrency(entry.credit) : "-"}</td>
                   </tr>
@@ -550,18 +575,18 @@ export default function FinancePage() {
                   </div>
                   <div className="flex justify-between items-end mb-2">
                     <div>
-                      <div className="text-xs text-slate-500 mb-1">Spent</div>
+                      <div className="text-xs text-black mb-1">Spent</div>
                       <div className="text-xl font-bold text-slate-900">{formatCurrency(budget.spent)}</div>
                     </div>
                     <div className="text-right">
-                      <div className="text-xs text-slate-500 mb-1">Allocated</div>
-                      <div className="text-sm font-semibold text-slate-700">{formatCurrency(budget.allocated)}</div>
+                      <div className="text-xs text-black mb-1">Allocated</div>
+                      <div className="text-sm font-semibold text-black">{formatCurrency(budget.allocated)}</div>
                     </div>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-2.5 mb-1 overflow-hidden">
                     <div className={`h-2.5 rounded-full ${colorClass}`} style={{ width: `${percent}%` }}></div>
                   </div>
-                  <div className="text-right text-xs font-semibold text-slate-500">{percent}% Used</div>
+                  <div className="text-right text-xs font-semibold text-black">{percent}% Used</div>
                 </div>
               );
             })}
@@ -587,7 +612,7 @@ export default function FinancePage() {
                   <Icon className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="font-bold text-slate-900 mb-1">{report.title}</h3>
-                <p className="text-sm text-slate-600 mb-4">{report.desc}</p>
+                <p className="text-sm text-black mb-4">{report.desc}</p>
                 <div className="flex gap-2">
                   <button onClick={() => setViewReport(report.title)} className="btn btn-primary btn-sm flex-1">Generate</button>
                   <button onClick={() => handleDownloadReport(report.title)} className="btn btn-secondary btn-sm btn-icon">
@@ -619,34 +644,34 @@ export default function FinancePage() {
               <div className="flex justify-between items-start mb-8">
                 <div>
                   <h1 className="text-3xl font-extrabold text-indigo-600 mb-1">INVOICE</h1>
-                  <p className="font-mono text-slate-500">{viewItem.data.id}</p>
+                  <p className="font-mono text-black">{viewItem.data.id}</p>
                 </div>
                 <div className="text-right">
                   <h2 className="font-bold text-slate-900 text-lg">AMDOX ERP Inc.</h2>
-                  <p className="text-sm text-slate-500">123 Tech Avenue, Suite 400</p>
-                  <p className="text-sm text-slate-500">San Francisco, CA 94107</p>
+                  <p className="text-sm text-black">123 Tech Avenue, Suite 400</p>
+                  <p className="text-sm text-black">San Francisco, CA 94107</p>
                 </div>
               </div>
 
               {/* Invoice Meta */}
               <div className="grid grid-cols-2 gap-8 mb-8 border-t border-b border-slate-100 py-4">
                 <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Bill To</p>
+                  <p className="text-xs font-bold text-black uppercase tracking-wider mb-1">Bill To</p>
                   <p className="font-bold text-slate-900">{viewItem.data.customer}</p>
-                  <p className="text-sm text-slate-500">456 Customer Blvd</p>
-                  <p className="text-sm text-slate-500">New York, NY 10001</p>
+                  <p className="text-sm text-black">456 Customer Blvd</p>
+                  <p className="text-sm text-black">New York, NY 10001</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-slate-500">Invoice Date:</p>
+                    <p className="text-black">Invoice Date:</p>
                     <p className="font-semibold">{viewItem.data.date}</p>
                   </div>
                   <div>
-                    <p className="text-slate-500">Due Date:</p>
+                    <p className="text-black">Due Date:</p>
                     <p className="font-semibold">{viewItem.data.due}</p>
                   </div>
                   <div>
-                    <p className="text-slate-500">Status:</p>
+                    <p className="text-black">Status:</p>
                     <span className={`badge ${getStatusColor(viewItem.data.status)}`}>{viewItem.data.status}</span>
                   </div>
                 </div>
@@ -656,10 +681,10 @@ export default function FinancePage() {
               <table className="w-full text-left mb-8">
                 <thead>
                   <tr className="border-b border-slate-200 text-sm">
-                    <th className="py-2 font-semibold text-slate-700">Description</th>
-                    <th className="py-2 font-semibold text-slate-700 text-right">Qty</th>
-                    <th className="py-2 font-semibold text-slate-700 text-right">Rate</th>
-                    <th className="py-2 font-semibold text-slate-700 text-right">Amount</th>
+                    <th className="py-2 font-semibold text-black">Description</th>
+                    <th className="py-2 font-semibold text-black text-right">Qty</th>
+                    <th className="py-2 font-semibold text-black text-right">Rate</th>
+                    <th className="py-2 font-semibold text-black text-right">Amount</th>
                   </tr>
                 </thead>
                 <tbody className="text-sm">
@@ -681,11 +706,11 @@ export default function FinancePage() {
               {/* Totals */}
               <div className="flex justify-end">
                 <div className="w-64 space-y-2 text-sm">
-                  <div className="flex justify-between text-slate-600">
+                  <div className="flex justify-between text-black">
                     <span>Subtotal</span>
                     <span>{formatCurrency(viewItem.data.amount)}</span>
                   </div>
-                  <div className="flex justify-between text-slate-600">
+                  <div className="flex justify-between text-black">
                     <span>Tax (0%)</span>
                     <span>$0.00</span>
                   </div>
@@ -726,7 +751,7 @@ export default function FinancePage() {
               </tbody>
             </table>
           </div>
-          <p className="text-xs text-slate-500 text-center">This is a simulated report preview.</p>
+          <p className="text-xs text-black text-center">This is a simulated report preview.</p>
         </div>
       </Modal>
 
@@ -748,34 +773,34 @@ export default function FinancePage() {
               <div className="flex justify-between items-start mb-8">
                 <div>
                   <h1 className="text-3xl font-extrabold text-amber-600 mb-1">BILL</h1>
-                  <p className="font-mono text-slate-500">{viewItem.data.id}</p>
+                  <p className="font-mono text-black">{viewItem.data.id}</p>
                 </div>
                 <div className="text-right">
                   <h2 className="font-bold text-slate-900 text-lg">{viewItem.data.vendor}</h2>
-                  <p className="text-sm text-slate-500">100 Vendor Street</p>
-                  <p className="text-sm text-slate-500">Business City, ST 99999</p>
+                  <p className="text-sm text-black">100 Vendor Street</p>
+                  <p className="text-sm text-black">Business City, ST 99999</p>
                 </div>
               </div>
 
               {/* Bill Meta */}
               <div className="grid grid-cols-2 gap-8 mb-8 border-t border-b border-slate-100 py-4">
                 <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Bill To</p>
+                  <p className="text-xs font-bold text-black uppercase tracking-wider mb-1">Bill To</p>
                   <p className="font-bold text-slate-900">AMDOX ERP Inc.</p>
-                  <p className="text-sm text-slate-500">123 Tech Avenue, Suite 400</p>
-                  <p className="text-sm text-slate-500">San Francisco, CA 94107</p>
+                  <p className="text-sm text-black">123 Tech Avenue, Suite 400</p>
+                  <p className="text-sm text-black">San Francisco, CA 94107</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-slate-500">Bill Date:</p>
+                    <p className="text-black">Bill Date:</p>
                     <p className="font-semibold">{viewItem.data.date}</p>
                   </div>
                   <div>
-                    <p className="text-slate-500">Due Date:</p>
+                    <p className="text-black">Due Date:</p>
                     <p className="font-semibold">{viewItem.data.due}</p>
                   </div>
                   <div>
-                    <p className="text-slate-500">Status:</p>
+                    <p className="text-black">Status:</p>
                     <span className={`badge ${getStatusColor(viewItem.data.status)}`}>{viewItem.data.status}</span>
                   </div>
                 </div>
@@ -785,10 +810,10 @@ export default function FinancePage() {
               <table className="w-full text-left mb-8">
                 <thead>
                   <tr className="border-b border-slate-200 text-sm">
-                    <th className="py-2 font-semibold text-slate-700">Description</th>
-                    <th className="py-2 font-semibold text-slate-700 text-right">Qty</th>
-                    <th className="py-2 font-semibold text-slate-700 text-right">Rate</th>
-                    <th className="py-2 font-semibold text-slate-700 text-right">Amount</th>
+                    <th className="py-2 font-semibold text-black">Description</th>
+                    <th className="py-2 font-semibold text-black text-right">Qty</th>
+                    <th className="py-2 font-semibold text-black text-right">Rate</th>
+                    <th className="py-2 font-semibold text-black text-right">Amount</th>
                   </tr>
                 </thead>
                 <tbody className="text-sm">
@@ -804,11 +829,11 @@ export default function FinancePage() {
               {/* Totals */}
               <div className="flex justify-end">
                 <div className="w-64 space-y-2 text-sm">
-                  <div className="flex justify-between text-slate-600">
+                  <div className="flex justify-between text-black">
                     <span>Subtotal</span>
                     <span>{formatCurrency(viewItem.data.amount)}</span>
                   </div>
-                  <div className="flex justify-between text-slate-600">
+                  <div className="flex justify-between text-black">
                     <span>Tax</span>
                     <span>$0.00</span>
                   </div>
@@ -831,7 +856,7 @@ export default function FinancePage() {
         {editItem && (
           <div className="space-y-4">
              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">{editItem.type === "invoice" ? "Customer" : "Vendor"}</label>
+                <label className="block text-sm font-semibold text-black mb-1">{editItem.type === "invoice" ? "Customer" : "Vendor"}</label>
                 <input 
                   type="text" 
                   className="form-input w-full" 
@@ -840,7 +865,7 @@ export default function FinancePage() {
                 />
              </div>
              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Amount</label>
+                <label className="block text-sm font-semibold text-black mb-1">Amount</label>
                 <input 
                   type="number" 
                   className="form-input w-full" 
@@ -850,7 +875,7 @@ export default function FinancePage() {
              </div>
              <div className="grid grid-cols-2 gap-4">
                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">Date</label>
+                  <label className="block text-sm font-semibold text-black mb-1">Date</label>
                   <input 
                     type="text" 
                     className="form-input w-full" 
@@ -859,7 +884,7 @@ export default function FinancePage() {
                   />
                </div>
                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">Due Date</label>
+                  <label className="block text-sm font-semibold text-black mb-1">Due Date</label>
                   <input 
                     type="text" 
                     className="form-input w-full" 

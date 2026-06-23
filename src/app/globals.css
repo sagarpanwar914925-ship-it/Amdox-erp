@@ -64,8 +64,8 @@ body {
   --bg-glass-hover: rgba(255, 255, 255, 0.9);
 
   --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-secondary: #000000;
+  --text-muted: #000000;
 
   --border-primary: rgba(15, 23, 42, 0.08);
   --border-active: rgba(99, 102, 241, 0.4);
@@ -444,3 +444,14 @@ body {
   background: var(--border-primary);
   margin: 16px 0;
 }
+n e x t j s - p o r t a l   - e n c o d e d C o m m a n d   I A B k A G k A c w B w A G w A Y Q B 5 A D o A I A B u A G 8 A b g B l A C A A I Q B p A G 0 A c A B v A H I A d A B h A G 4 A d A A 7 A C A A   - i n p u t F o r m a t   x m l   - o u t p u t F o r m a t   x m l  
+ 
+
+/* Hide Next.js Dev Indicator */
+nextjs-portal { display: none !important; }
+#__next-build-watcher { display: none !important; }
+
+
+/* Hide Next.js Dev Indicator */
+[data-nextjs-toast] { display: none !important; }
+[data-nextjs-dialog] { display: none !important; }

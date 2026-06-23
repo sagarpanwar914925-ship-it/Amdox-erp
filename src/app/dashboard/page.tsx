@@ -114,7 +114,7 @@ function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
     <div className="glass-card p-3 text-sm">
-      <p className="text-slate-400 mb-2 font-semibold">{label}</p>
+      <p className="text-black mb-2 font-semibold">{label}</p>
       {payload.map((entry: any) => (
         <p key={entry.name} style={{ color: entry.color }} className="flex justify-between gap-4">
           <span>{entry.name}:</span>
@@ -146,13 +146,13 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-extrabold text-slate-900 mb-1">
               {getGreeting()}, {session?.user?.name?.split(" ")[0] || "Alex"} 👋
             </h1>
-            <p className="text-slate-500 text-sm">
+            <p className="text-black text-sm">
               Here&apos;s what&apos;s happening at Acme Corporation today.
             </p>
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden md:flex flex-col items-end text-right">
-              <span className="text-xs text-slate-500">System Status</span>
+              <span className="text-xs text-black">System Status</span>
               <div className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 All Systems Operational
@@ -178,8 +178,8 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="text-2xl font-extrabold text-slate-900 mb-1">{kpi.value}</div>
-              <div className="text-sm font-semibold text-slate-700">{kpi.title}</div>
-              <div className="text-xs text-slate-600 mt-1">{kpi.sub}</div>
+              <div className="text-sm font-semibold text-black">{kpi.title}</div>
+              <div className="text-xs text-black mt-1">{kpi.sub}</div>
             </div>
           );
         })}
@@ -197,11 +197,11 @@ export default function DashboardPage() {
             <div className="flex gap-4 text-xs">
               <div className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
-                <span className="text-slate-600">Revenue</span>
+                <span className="text-black">Revenue</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <span className="text-slate-600">Profit</span>
+                <span className="text-black">Profit</span>
               </div>
             </div>
           </div>
@@ -257,7 +257,7 @@ export default function DashboardPage() {
               <div key={item.name} className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ background: item.color }} />
-                  <span className="text-slate-600">{item.name}</span>
+                  <span className="text-black">{item.name}</span>
                 </div>
                 <span className="font-semibold text-slate-900">{item.value}%</span>
               </div>
@@ -307,9 +307,9 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-slate-900">{activity.text}</div>
-                    <div className="text-xs text-slate-600 mt-0.5">{activity.sub}</div>
+                    <div className="text-xs text-black mt-0.5">{activity.sub}</div>
                   </div>
-                  <div className="text-xs text-slate-500 shrink-0">{activity.time}</div>
+                  <div className="text-xs text-black shrink-0">{activity.time}</div>
                 </div>
               );
             })}
@@ -332,7 +332,7 @@ export default function DashboardPage() {
                 return (
                   <div key={i} className="flex gap-3 text-sm">
                     <Icon className={`w-4 h-4 shrink-0 mt-0.5 ${insight.color}`} />
-                    <p className="text-slate-700 text-xs leading-relaxed">{insight.text}</p>
+                    <p className="text-black text-xs leading-relaxed">{insight.text}</p>
                   </div>
                 );
               })}
@@ -354,8 +354,8 @@ export default function DashboardPage() {
                       {item.priority}
                     </span>
                   </div>
-                  <div className="text-xs text-slate-600">{item.from} · {item.dept}</div>
-                  <div className="text-xs text-slate-500 mt-0.5">{item.date}</div>
+                  <div className="text-xs text-black">{item.from} · {item.dept}</div>
+                  <div className="text-xs text-black mt-0.5">{item.date}</div>
                 </div>
               ))}
             </div>

@@ -103,7 +103,7 @@ export default function LoginPage() {
             </div>
           </div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">AMDOX ERP</h1>
-          <p className="text-slate-500 mt-2 font-medium">
+          <p className="text-black mt-2 font-medium">
             AI-Powered Cloud ERP Suite
           </p>
         </div>
@@ -140,7 +140,7 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-700 font-semibold">Email Address</Label>
+                <Label htmlFor="email" className="text-black font-semibold">Email Address</Label>
                 <Input
                   id="email"
                   name="email"
@@ -157,7 +157,7 @@ export default function LoginPage() {
               {/* Password */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-slate-700 font-semibold">Password</Label>
+                  <Label htmlFor="password" className="text-black font-semibold">Password</Label>
                   <Link
                     href="/forgot-password"
                     className="text-xs text-indigo-600 hover:text-indigo-700 font-semibold transition-colors"
@@ -180,7 +180,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-black hover:text-indigo-600 transition-colors"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -204,7 +204,7 @@ export default function LoginPage() {
                 <div className="w-full border-t border-slate-200" />
               </div>
               <div className="relative flex justify-center text-xs uppercase font-bold tracking-wider">
-                <span className="bg-white px-3 text-slate-400 rounded-full">
+                <span className="bg-white px-3 text-black rounded-full">
                   or
                 </span>
               </div>
@@ -215,7 +215,7 @@ export default function LoginPage() {
               <Button
                 variant="outline"
                 disabled={true}
-                className="w-full h-11 border-slate-200 text-slate-600 hover:bg-slate-50 font-medium"
+                className="w-full h-11 border-slate-200 text-black hover:bg-slate-50 font-medium"
               >
                 <Icons.google className="mr-2 h-4 w-4" />
                 Continue with Google
@@ -224,7 +224,7 @@ export default function LoginPage() {
               <Button
                 variant="outline"
                 disabled={true}
-                className="w-full h-11 border-slate-200 text-slate-600 hover:bg-slate-50 font-medium"
+                className="w-full h-11 border-slate-200 text-black hover:bg-slate-50 font-medium"
               >
                 <Icons.microsoft className="mr-2 h-4 w-4" />
                 Continue with Microsoft
@@ -232,7 +232,7 @@ export default function LoginPage() {
             </div>
 
             {/* Footer */}
-            <p className="text-center text-sm text-slate-500 mt-8 font-medium">
+            <p className="text-center text-sm text-black mt-8 font-medium">
               Don't have an account?{" "}
               <Link
                 href="/register"
@@ -243,7 +243,7 @@ export default function LoginPage() {
             </p>
 
             {/* Security Note */}
-            <div className="flex items-center justify-center gap-1.5 mt-5 text-xs text-slate-400 font-medium">
+            <div className="flex items-center justify-center gap-1.5 mt-5 text-xs text-black font-medium">
               <Lock size={12} />
               <span>Your data is encrypted and secure</span>
             </div>
@@ -251,7 +251,7 @@ export default function LoginPage() {
         </Card>
 
         {/* Footer Links */}
-        <div className="flex justify-center gap-5 mt-8 text-xs text-slate-500 font-semibold">
+        <div className="flex justify-center gap-5 mt-8 text-xs text-black font-semibold">
           <Link href="/" className="hover:text-indigo-600 transition-colors">
             Home
           </Link>

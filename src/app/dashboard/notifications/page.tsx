@@ -41,9 +41,9 @@ export default function NotificationsPage() {
                 <div className="flex-1">
                   <div className="flex justify-between items-start mb-1">
                     <h4 className="font-bold text-slate-900">{notif.title}</h4>
-                    <span className="text-xs text-slate-500">{notif.time}</span>
+                    <span className="text-xs text-black">{notif.time}</span>
                   </div>
-                  <p className="text-sm text-slate-600">{notif.desc}</p>
+                  <p className="text-sm text-black">{notif.desc}</p>
                 </div>
               </div>
             );

@@ -15,7 +15,7 @@ import {
 import { formatCurrency, getStatusColor } from "@/lib/utils";
 import { Modal } from "@/components/ui/modal";
 
-const INVENTORY_ITEMS = [
+const INITIAL_INVENTORY_ITEMS = [
   { sku: "SKU-001", name: "Laptop Pro X", category: "Electronics", warehouse: "WH-001", qty: 245, reserved: 40, reorder: 50, value: 245000, status: "IN_STOCK" },
   { sku: "SKU-047", name: "USB-C Hub 7-Port", category: "Accessories", warehouse: "WH-001", qty: 12, reserved: 8, reorder: 100, value: 2400, status: "LOW_STOCK" },
   { sku: "SKU-112", name: "27\" 4K Monitor", category: "Electronics", warehouse: "WH-002", qty: 89, reserved: 20, reorder: 30, value: 89000, status: "IN_STOCK" },
@@ -24,7 +24,7 @@ const INVENTORY_ITEMS = [
   { sku: "SKU-422", name: "Office Chair Ergonomic", category: "Furniture", warehouse: "WH-002", qty: 34, reserved: 10, reorder: 20, value: 51000, status: "IN_STOCK" },
 ];
 
-const PURCHASE_ORDERS = [
+const INITIAL_PURCHASE_ORDERS = [
   { id: "PO-2024-445", vendor: "TechSupply Corp", items: 8, total: 34200, date: "Dec 01", expected: "Dec 15", status: "SENT" },
   { id: "PO-2024-444", vendor: "Office Solutions Inc", items: 12, total: 18600, date: "Nov 28", expected: "Dec 10", status: "PARTIAL" },
   { id: "PO-2024-443", vendor: "Electronics Hub", items: 5, total: 125000, date: "Nov 25", expected: "Dec 08", status: "RECEIVED" },
@@ -32,7 +32,7 @@ const PURCHASE_ORDERS = [
   { id: "PO-2024-441", vendor: "Global Accessories", items: 3, total: 8400, date: "Dec 03", expected: "Dec 20", status: "DRAFT" },
 ];
 
-const VENDORS = [
+const INITIAL_VENDORS = [
   { name: "TechSupply Corp", code: "VND-001", category: "Electronics", country: "USA", rating: 4.8, orders: 42, value: 890000, status: "ACTIVE" },
   { name: "Office Solutions Inc", code: "VND-002", category: "Office", country: "UK", rating: 4.2, orders: 28, value: 420000, status: "ACTIVE" },
   { name: "Electronics Hub", code: "VND-003", category: "Electronics", country: "Singapore", rating: 4.5, orders: 35, value: 640000, status: "ACTIVE" },
@@ -71,10 +71,29 @@ export default function SupplyChainPage() {
   const [activeTab, setActiveTab] = useState<"inventory" | "procurement" | "vendors" | "forecasting">(tabParam || "inventory");
   const [viewItem, setViewItem] = useState<{ type: "inventory" | "procurement" | "vendor"; data: any } | null>(null);
 
+  const [inventory, setInventory] = useState(INITIAL_INVENTORY_ITEMS);
+  const [orders, setOrders] = useState(INITIAL_PURCHASE_ORDERS);
+  const [vendors, setVendors] = useState(INITIAL_VENDORS);
+
   useEffect(() => {
     if (tabParam && ["inventory", "procurement", "vendors", "forecasting"].includes(tabParam)) {
       setActiveTab(tabParam);
     }
+
+    import("@/app/actions/supply").then(async (actions) => {
+      try {
+        const [invs, vndrs, pos] = await Promise.all([
+          actions.getInventory(),
+          actions.getVendors(),
+          actions.getPurchaseOrders()
+        ]);
+        if (invs && invs.length > 0) setInventory(invs);
+        if (vndrs && vndrs.length > 0) setVendors(vndrs);
+        if (pos && pos.length > 0) setOrders(pos);
+      } catch (err) {
+        console.error("Failed to fetch supply chain data:", err);
+      }
+    });
   }, [tabParam]);
 
   const handleTabChange = (tab: typeof activeTab) => {
@@ -113,7 +132,7 @@ export default function SupplyChainPage() {
                 <Icon className="w-5 h-5 text-white" />
               </div>
               <div className="text-2xl font-extrabold text-slate-900">{kpi.value}</div>
-              <div className="text-sm text-slate-600 mt-1">{kpi.title}</div>
+              <div className="text-sm text-black mt-1">{kpi.title}</div>
               <div className={`text-xs font-semibold mt-1 flex items-center gap-1 ${kpi.up ? "text-emerald-400" : "text-red-400"}`}>
                 {kpi.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                 {kpi.change}
@@ -130,7 +149,7 @@ export default function SupplyChainPage() {
             key={tab.id}
             onClick={() => handleTabChange(tab.id as any)}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-              activeTab === tab.id ? "gradient-brand text-white shadow" : "text-slate-600 hover:text-slate-900"
+              activeTab === tab.id ? "gradient-brand text-white shadow" : "text-black hover:text-slate-900"
             }`}
           >
             {tab.label}
@@ -143,7 +162,7 @@ export default function SupplyChainPage() {
         <div className="space-y-4">
           <div className="flex gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
               <input className="form-input pl-10" placeholder="Search products by SKU or name..." />
             </div>
             <button className="btn btn-secondary btn-sm"><Filter className="w-4 h-4" /> Filter</button>
@@ -167,15 +186,15 @@ export default function SupplyChainPage() {
                 </tr>
               </thead>
               <tbody>
-                {INVENTORY_ITEMS.map((item) => {
+                {inventory.map((item) => {
                   const statusKey = item.status.toLowerCase();
                   const statusInfo = STOCK_STATUS[statusKey as keyof typeof STOCK_STATUS];
                   return (
                     <tr key={item.sku}>
                       <td className="font-mono text-indigo-400 text-sm">{item.sku}</td>
                       <td className="font-semibold text-slate-900">{item.name}</td>
-                      <td className="text-slate-600 text-sm">{item.category}</td>
-                      <td className="font-mono text-slate-600 text-sm">{item.warehouse}</td>
+                      <td className="text-black text-sm">{item.category}</td>
+                      <td className="font-mono text-black text-sm">{item.warehouse}</td>
                       <td className="text-right font-bold text-slate-900">{item.qty}</td>
                       <td className="text-right text-amber-400">{item.reserved}</td>
                       <td className="text-right text-emerald-400 font-semibold">{item.qty - item.reserved}</td>
@@ -219,14 +238,14 @@ export default function SupplyChainPage() {
                 </tr>
               </thead>
               <tbody>
-                {PURCHASE_ORDERS.map((po) => (
+                {orders.map((po) => (
                   <tr key={po.id}>
                     <td className="font-mono text-amber-400 text-sm">{po.id}</td>
                     <td className="font-semibold text-slate-900">{po.vendor}</td>
                     <td className="text-right">{po.items}</td>
                     <td className="text-right font-bold text-slate-900">{formatCurrency(po.total)}</td>
-                    <td className="text-slate-600">{po.date}</td>
-                    <td className="text-slate-600">{po.expected}</td>
+                    <td className="text-black">{po.date}</td>
+                    <td className="text-black">{po.expected}</td>
                     <td><span className={`badge ${getStatusColor(po.status)}`}>{po.status}</span></td>
                     <td>
                       <div className="flex gap-1">
@@ -249,12 +268,12 @@ export default function SupplyChainPage() {
             <button className="btn btn-primary btn-sm"><Plus className="w-4 h-4" /> Add Vendor</button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {VENDORS.map((vendor) => (
+            {vendors.map((vendor) => (
               <div key={vendor.code} className="glass-card p-5">
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <div className="font-bold text-slate-900">{vendor.name}</div>
-                    <div className="text-xs text-slate-500 mt-0.5">{vendor.code} · {vendor.country}</div>
+                    <div className="text-xs text-black mt-0.5">{vendor.code} · {vendor.country}</div>
                   </div>
                   <span className="badge badge-success">Active</span>
                 </div>
@@ -262,22 +281,22 @@ export default function SupplyChainPage() {
                   {Array.from({ length: 5 }).map((_, i) => (
                     <span
                       key={i}
-                      className={`text-sm ${i < Math.floor(vendor.rating) ? "text-amber-400" : "text-slate-700"}`}
+                      className={`text-sm ${i < Math.floor(vendor.rating) ? "text-amber-400" : "text-black"}`}
                     >★</span>
                   ))}
                   <span className="text-sm text-slate-900 font-bold ml-1">{vendor.rating}</span>
                 </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Category</span>
+                    <span className="text-black">Category</span>
                     <span className="text-slate-300">{vendor.category}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-600">Total Orders</span>
+                    <span className="text-black">Total Orders</span>
                     <span className="text-slate-900 font-semibold">{vendor.orders}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Total Value</span>
+                    <span className="text-black">Total Value</span>
                     <span className="text-emerald-400 font-bold">{formatCurrency(vendor.value)}</span>
                   </div>
                 </div>
@@ -303,7 +322,7 @@ export default function SupplyChainPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900">AI Demand Forecasting</h3>
-                  <p className="text-sm text-slate-600">Prophet model · Last trained: Dec 5, 2024 · MAPE: 4.2%</p>
+                  <p className="text-sm text-black">Prophet model · Last trained: Dec 5, 2024 · MAPE: 4.2%</p>
                 </div>
                 <div className="ml-auto flex gap-2">
                   <button className="btn btn-secondary btn-sm"><RefreshCw className="w-4 h-4" /> Retrain</button>
@@ -353,21 +372,21 @@ export default function SupplyChainPage() {
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <div className="font-bold text-slate-900 text-sm">{item.name}</div>
-                    <div className="text-xs text-slate-500">{item.sku}</div>
+                    <div className="text-xs text-black">{item.sku}</div>
                   </div>
                   <span className={`badge ${item.trend === "up" ? "badge-success" : item.trend === "down" ? "badge-danger" : "badge-neutral"}`}>
                     {item.trend === "up" ? "↑" : item.trend === "down" ? "↓" : "→"} {item.trend}
                   </span>
                 </div>
                 <div className="text-2xl font-extrabold text-indigo-400">{item.forecast.toLocaleString()}</div>
-                <div className="text-xs text-slate-500 mb-3">units / next 8 weeks</div>
+                <div className="text-xs text-black mb-3">units / next 8 weeks</div>
                 <div className="space-y-1 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-slate-600">Confidence</span>
+                    <span className="text-black">Confidence</span>
                     <span className="text-slate-900 font-semibold">{item.conf}%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-600">MAPE</span>
+                    <span className="text-black">MAPE</span>
                     <span className="text-slate-900 font-semibold">{item.mape}%</span>
                   </div>
                 </div>
@@ -387,36 +406,36 @@ export default function SupplyChainPage() {
           <div className="space-y-4">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center">
-                <Package className="w-8 h-8 text-slate-400" />
+                <Package className="w-8 h-8 text-black" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-900">{viewItem.data.name}</h3>
-                <p className="text-slate-500 font-mono text-sm">{viewItem.data.sku}</p>
+                <p className="text-black font-mono text-sm">{viewItem.data.sku}</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Category</p>
+                <p className="text-xs text-black mb-1">Category</p>
                 <p className="font-semibold">{viewItem.data.category}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Warehouse</p>
+                <p className="text-xs text-black mb-1">Warehouse</p>
                 <p className="font-semibold">{viewItem.data.warehouse}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Quantity</p>
+                <p className="text-xs text-black mb-1">Quantity</p>
                 <p className="font-semibold">{viewItem.data.qty}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Value</p>
+                <p className="text-xs text-black mb-1">Value</p>
                 <p className="font-semibold">{formatCurrency(viewItem.data.value)}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Reserved</p>
+                <p className="text-xs text-black mb-1">Reserved</p>
                 <p className="font-semibold text-amber-600">{viewItem.data.reserved}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Reorder Point</p>
+                <p className="text-xs text-black mb-1">Reorder Point</p>
                 <p className="font-semibold">{viewItem.data.reorder}</p>
               </div>
             </div>
@@ -437,23 +456,23 @@ export default function SupplyChainPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Vendor</p>
+                <p className="text-xs text-black mb-1">Vendor</p>
                 <p className="font-semibold">{viewItem.data.vendor}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Total Amount</p>
+                <p className="text-xs text-black mb-1">Total Amount</p>
                 <p className="font-semibold">{formatCurrency(viewItem.data.total)}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Order Date</p>
+                <p className="text-xs text-black mb-1">Order Date</p>
                 <p className="font-semibold">{viewItem.data.date}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Expected Delivery</p>
+                <p className="text-xs text-black mb-1">Expected Delivery</p>
                 <p className="font-semibold">{viewItem.data.expected}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Items Count</p>
+                <p className="text-xs text-black mb-1">Items Count</p>
                 <p className="font-semibold">{viewItem.data.items}</p>
               </div>
             </div>
@@ -471,29 +490,29 @@ export default function SupplyChainPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">{viewItem.data.name}</h3>
-                <p className="text-slate-500 font-mono text-sm">{viewItem.data.code}</p>
+                <p className="text-black font-mono text-sm">{viewItem.data.code}</p>
               </div>
               <span className="badge badge-success">{viewItem.data.status}</span>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Category</p>
+                <p className="text-xs text-black mb-1">Category</p>
                 <p className="font-semibold">{viewItem.data.category}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Country</p>
+                <p className="text-xs text-black mb-1">Country</p>
                 <p className="font-semibold">{viewItem.data.country}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Rating</p>
+                <p className="text-xs text-black mb-1">Rating</p>
                 <p className="font-semibold">★ {viewItem.data.rating}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Total Orders</p>
+                <p className="text-xs text-black mb-1">Total Orders</p>
                 <p className="font-semibold">{viewItem.data.orders}</p>
               </div>
               <div className="col-span-2 p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Total Value</p>
+                <p className="text-xs text-black mb-1">Total Value</p>
                 <p className="font-semibold text-lg text-emerald-600">{formatCurrency(viewItem.data.value)}</p>
               </div>
             </div>

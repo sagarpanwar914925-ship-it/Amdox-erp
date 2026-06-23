@@ -61,7 +61,7 @@ export function TopBar({ collapsed, user, setMobileMenuOpen }: TopBarProps) {
     <header className="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
       <div className="flex items-center gap-4">
         <button 
-          className="md:hidden p-2 -ml-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+          className="md:hidden p-2 -ml-2 text-black dark:text-black hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
           onClick={() => setMobileMenuOpen?.(true)}
         >
           <Menu className="w-5 h-5" />
@@ -69,7 +69,7 @@ export function TopBar({ collapsed, user, setMobileMenuOpen }: TopBarProps) {
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">
           {getTitle()}
         </h2>
-        <div className="hidden md:flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+        <div className="hidden md:flex items-center gap-1 text-xs text-black dark:text-black">
           <span>AMDOX ERP</span>
           {pathname
             .split("/")
@@ -77,7 +77,7 @@ export function TopBar({ collapsed, user, setMobileMenuOpen }: TopBarProps) {
             .map((part, i, arr) => (
               <span key={i} className="flex items-center gap-1">
                 <ChevronRight className="w-3 h-3" />
-                <span className={i === arr.length - 1 ? "text-slate-700 dark:text-slate-300" : ""}>
+                <span className={i === arr.length - 1 ? "text-black dark:text-slate-300" : ""}>
                   {part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, " ")}
                 </span>
               </span>
@@ -87,7 +87,7 @@ export function TopBar({ collapsed, user, setMobileMenuOpen }: TopBarProps) {
 
       <div className="flex items-center gap-3">
         {/* Search */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm text-slate-500 dark:text-slate-400 w-56 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-transparent">
+        <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm text-black dark:text-black w-56 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-transparent">
           <Search className="w-4 h-4" />
           <span>Search...</span>
           <span className="ml-auto text-xs">⌘K</span>
@@ -96,7 +96,7 @@ export function TopBar({ collapsed, user, setMobileMenuOpen }: TopBarProps) {
         {/* Notifications */}
         <Link
           href="/dashboard/notifications"
-          className="relative p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          className="relative p-2 rounded-lg text-black dark:text-black hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
           <Bell className="w-5 h-5" />
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
@@ -105,7 +105,7 @@ export function TopBar({ collapsed, user, setMobileMenuOpen }: TopBarProps) {
         {/* Dark mode */}
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          className="p-2 rounded-lg text-black dark:text-black hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
           {mounted && theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </button>
@@ -119,7 +119,7 @@ export function TopBar({ collapsed, user, setMobileMenuOpen }: TopBarProps) {
             <p className="text-sm font-medium text-slate-900 dark:text-white">
               {profileName}
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-black dark:text-black">
               {(user as any)?.role || "Employee"}
             </p>
           </div>
@@ -128,7 +128,7 @@ export function TopBar({ collapsed, user, setMobileMenuOpen }: TopBarProps) {
           </div>
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-lg text-black dark:text-black hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             title="Logout"
           >
             <LogOut className="w-5 h-5" />

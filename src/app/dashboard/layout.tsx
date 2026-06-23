@@ -39,7 +39,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex h-screen items-center justify-center bg-white dark:bg-slate-950">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-          <p className="text-slate-600 dark:text-slate-400">Loading...</p>
+          <p className="text-black dark:text-black">Loading...</p>
         </div>
       </div>
     );
@@ -87,7 +87,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <Shield className="w-10 h-10 text-red-600 dark:text-red-500" />
                 </div>
                 <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-3">Access Denied</h2>
-                <p className="text-slate-600 dark:text-slate-400 max-w-md mb-8">
+                <p className="text-black dark:text-black max-w-md mb-8">
                   You do not have the required permissions to view this module. Please contact your administrator if you believe this is a mistake.
                 </p>
                 <button 

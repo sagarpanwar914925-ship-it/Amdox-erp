@@ -110,10 +110,10 @@ export default function LandingPage() {
               <Zap className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-bold gradient-brand-text">AMDOX</span>
-            <span className="text-sm text-slate-400 hidden sm:block">Technologies</span>
+            <span className="text-sm text-black hidden sm:block">Technologies</span>
           </div>
 
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-black">
             {["Features", "Modules", "Pricing", "Docs"].map((item) => (
               <a
                 key={item}
@@ -155,7 +155,7 @@ export default function LandingPage() {
             <span className="text-slate-900 dark:text-white">AI Cloud ERP Suite</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-10 animate-fade-in leading-relaxed">
+          <p className="text-lg md:text-xl text-black max-w-3xl mx-auto mb-10 animate-fade-in leading-relaxed">
             The complete enterprise resource planning platform that combines Finance, HR, Supply Chain,
             Projects, and AI into one intelligent, cloud-native system. Built for scale.
           </p>
@@ -175,7 +175,7 @@ export default function LandingPage() {
             {STATS.map((stat) => (
               <div key={stat.label} className="glass-card p-6 text-center">
                 <div className="text-3xl font-extrabold gradient-brand-text mb-1">{stat.value}</div>
-                <div className="text-sm text-slate-400">{stat.label}</div>
+                <div className="text-sm text-black">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -191,7 +191,7 @@ export default function LandingPage() {
               <br />
               <span className="gradient-brand-text">One Platform</span>
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 text-lg max-w-2xl mx-auto">
+            <p className="text-black dark:text-black text-lg max-w-2xl mx-auto">
               12 fully-integrated modules covering every aspect of your enterprise operations.
             </p>
           </div>
@@ -207,7 +207,7 @@ export default function LandingPage() {
                     <Icon className="w-6 h-6 text-white" />
                   </div>
                   <h3 className="font-bold text-slate-900 dark:text-white mb-2">{feature.title}</h3>
-                  <p className="text-sm text-slate-400 leading-relaxed">{feature.desc}</p>
+                  <p className="text-sm text-black leading-relaxed">{feature.desc}</p>
                 </div>
               );
             })}
@@ -218,10 +218,10 @@ export default function LandingPage() {
       {/* ─── TECH STACK BANNER ─── */}
       <section className="py-16 px-6 border-y border-white/5">
         <div className="max-w-7xl mx-auto">
-          <p className="text-center text-sm text-slate-500 mb-8 uppercase tracking-widest">
+          <p className="text-center text-sm text-black mb-8 uppercase tracking-widest">
             Built with enterprise-grade technologies
           </p>
-          <div className="flex flex-wrap justify-center gap-6 text-sm font-semibold text-slate-400">
+          <div className="flex flex-wrap justify-center gap-6 text-sm font-semibold text-black">
             {[
               "Next.js 15", "React 19", "TypeScript", "PostgreSQL", "Prisma ORM",
               "Redis", "Docker", "Kubernetes", "GitHub Actions", "OpenTelemetry"
@@ -249,7 +249,7 @@ export default function LandingPage() {
               Machine Learning at the
               <span className="gradient-brand-text"> Core</span>
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 leading-relaxed mb-8">
+            <p className="text-black dark:text-black leading-relaxed mb-8">
               AMDOX uses advanced ML models to forecast demand, detect anomalies, optimize inventory,
               predict cash flow, and surface insights — automatically.
             </p>
@@ -286,11 +286,11 @@ export default function LandingPage() {
                 <div key={item.sku} className="flex items-center justify-between p-3 glass rounded-xl">
                   <div>
                     <div className="text-sm font-medium text-slate-900 dark:text-white">{item.product}</div>
-                    <div className="text-xs text-slate-500">{item.sku}</div>
+                    <div className="text-xs text-black">{item.sku}</div>
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-bold text-indigo-400">{item.forecast.toLocaleString()} units</div>
-                    <div className="text-xs text-slate-500">{item.confidence}% confidence</div>
+                    <div className="text-xs text-black">{item.confidence}% confidence</div>
                   </div>
                 </div>
               ))}
@@ -316,7 +316,7 @@ export default function LandingPage() {
                 <p className="text-slate-300 text-sm leading-relaxed mb-6">&ldquo;{t.text}&rdquo;</p>
                 <div>
                   <div className="font-semibold text-slate-900 dark:text-white text-sm">{t.name}</div>
-                  <div className="text-xs text-slate-500">{t.role}</div>
+                  <div className="text-xs text-black">{t.role}</div>
                 </div>
               </div>
             ))}
@@ -334,7 +334,7 @@ export default function LandingPage() {
               <br />
               <span className="gradient-brand-text">Your Enterprise?</span>
             </h2>
-            <p className="text-slate-400 mb-8 text-lg">
+            <p className="text-black mb-8 text-lg">
               Start your journey with AMDOX ERP today. Full access, no credit card required.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -346,7 +346,7 @@ export default function LandingPage() {
                 View Demo
               </Link>
             </div>
-            <div className="flex items-center justify-center gap-6 mt-8 text-sm text-slate-500">
+            <div className="flex items-center justify-center gap-6 mt-8 text-sm text-black">
               {["No credit card", "14-day trial", "SOC 2 compliant", "99.9% uptime"].map((item) => (
                 <div key={item} className="flex items-center gap-1">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -367,10 +367,10 @@ export default function LandingPage() {
             </div>
             <span className="font-bold text-slate-900 dark:text-white">AMDOX Technologies</span>
           </div>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-black">
             © 2024 AMDOX Technologies. AI-Powered Cloud ERP Suite.
           </p>
-          <div className="flex gap-4 text-sm text-slate-500">
+          <div className="flex gap-4 text-sm text-black">
             <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy</a>
             <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Terms</a>
             <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Security</a>

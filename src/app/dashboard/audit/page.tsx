@@ -27,7 +27,7 @@ export default function AuditPage() {
       <div className="glass-card overflow-hidden">
         <div className="p-4 border-b border-slate-200">
           <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
             <input type="text" placeholder="Search by user, action, or target..." className="form-input pl-10 w-full" />
           </div>
         </div>
@@ -46,16 +46,16 @@ export default function AuditPage() {
           <tbody>
             {AUDIT_LOGS.map((log) => (
               <tr key={log.id}>
-                <td className="font-mono text-xs text-slate-500">{log.id}</td>
-                <td className="font-mono text-xs text-slate-600">{log.date}</td>
+                <td className="font-mono text-xs text-black">{log.id}</td>
+                <td className="font-mono text-xs text-black">{log.date}</td>
                 <td className="font-semibold text-slate-900 text-sm">{log.user}</td>
                 <td className="text-sm">
-                  <span className="px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs font-mono font-semibold">
+                  <span className="px-2 py-1 bg-slate-100 text-black rounded text-xs font-mono font-semibold">
                     {log.action}
                   </span>
                 </td>
-                <td className="text-slate-600 text-sm">{log.target}</td>
-                <td className="font-mono text-xs text-slate-500">{log.ip}</td>
+                <td className="text-black text-sm">{log.target}</td>
+                <td className="font-mono text-xs text-black">{log.ip}</td>
                 <td>
                   <span className={`badge ${log.status === "SUCCESS" ? "badge-success" : "badge-danger"}`}>
                     {log.status}

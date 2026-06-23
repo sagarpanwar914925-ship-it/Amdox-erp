@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   BarChart3, TrendingUp, DollarSign, Users, Package,
   FolderOpen, Brain, PieChart, Download, Plus, Settings,
@@ -63,14 +63,36 @@ const WIDGETS = [
 export default function AnalyticsPage() {
   const [activeView, setActiveView] = useState<"overview" | "builder">("overview");
   const [period, setPeriod] = useState("2024");
+  const [analyticsData, setAnalyticsData] = useState<{
+    totalRevenue: string;
+    netProfit: string;
+    operatingExpenses: string;
+    ebitda: string;
+    revenuePerEmployee: string;
+    customerRetention: string;
+    rawRevenue: number;
+  } | null>(null);
+
+  useEffect(() => {
+    import("@/app/actions/analytics").then(async (actions) => {
+      try {
+        const data = await actions.getExecutiveAnalytics();
+        if (data && data.rawRevenue > 0) {
+          setAnalyticsData(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch analytics:", err);
+      }
+    });
+  }, []);
 
   const EXECUTIVE_KPIs = [
-    { title: "Total Revenue", value: "$7.23M", change: "+12.4%", up: true, icon: DollarSign, color: "#6366f1", pct: 82 },
-    { title: "Net Profit", value: "$1.87M", change: "+18.2%", up: true, icon: TrendingUp, color: "#22c55e", pct: 68 },
-    { title: "Operating Expenses", value: "$4.89M", change: "+9.1%", up: false, icon: BarChart3, color: "#f59e0b", pct: 74 },
-    { title: "EBITDA", value: "$2.34M", change: "+15.6%", up: true, icon: TrendingUp, color: "#3b82f6", pct: 55 },
-    { title: "Revenue per Employee", value: "$5,800", change: "+7.8%", up: true, icon: Users, color: "#ec4899", pct: 71 },
-    { title: "Customer Retention", value: "94.2%", change: "+2.1%", up: true, icon: Users, color: "#8b5cf6", pct: 94 },
+    { title: "Total Revenue", value: analyticsData?.totalRevenue || "$7.23M", change: "+12.4%", up: true, icon: DollarSign, color: "#6366f1", pct: 82 },
+    { title: "Net Profit", value: analyticsData?.netProfit || "$1.87M", change: "+18.2%", up: true, icon: TrendingUp, color: "#22c55e", pct: 68 },
+    { title: "Operating Expenses", value: analyticsData?.operatingExpenses || "$4.89M", change: "+9.1%", up: false, icon: BarChart3, color: "#f59e0b", pct: 74 },
+    { title: "EBITDA", value: analyticsData?.ebitda || "$2.34M", change: "+15.6%", up: true, icon: TrendingUp, color: "#3b82f6", pct: 55 },
+    { title: "Revenue per Employee", value: analyticsData?.revenuePerEmployee || "$5,800", change: "+7.8%", up: true, icon: Users, color: "#ec4899", pct: 71 },
+    { title: "Customer Retention", value: analyticsData?.customerRetention || "94.2%", change: "+2.1%", up: true, icon: Users, color: "#8b5cf6", pct: 94 },
   ];
 
   return (
@@ -118,7 +140,7 @@ export default function AnalyticsPage() {
                     </span>
                   </div>
                   <div className="text-xl font-extrabold text-slate-900 mb-1">{kpi.value}</div>
-                  <div className="text-xs text-slate-600 mb-2">{kpi.title}</div>
+                  <div className="text-xs text-black mb-2">{kpi.title}</div>
                   <div className="progress-bar h-1">
                     <div
                       className="progress-fill h-1"
@@ -140,11 +162,11 @@ export default function AnalyticsPage() {
               <div className="flex gap-4 text-xs">
                 <div className="flex items-center gap-1.5">
                   <div className="w-3 h-3 rounded-full bg-indigo-500" />
-                  <span className="text-slate-600">Revenue</span>
+                  <span className="text-black">Revenue</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-3 h-3 rounded-full border-2 border-dashed border-amber-400 bg-transparent" />
-                  <span className="text-slate-600">Target</span>
+                  <span className="text-black">Target</span>
                 </div>
               </div>
             </div>
@@ -197,7 +219,7 @@ export default function AnalyticsPage() {
                 {CATEGORY_MIX.map((item) => (
                   <div key={item.name} className="flex items-center gap-2 text-sm">
                     <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: item.color }} />
-                    <span className="text-slate-600 truncate">{item.name}</span>
+                    <span className="text-black truncate">{item.name}</span>
                     <span className="text-slate-900 font-bold ml-auto">{item.value}%</span>
                   </div>
                 ))}
@@ -239,11 +261,11 @@ export default function AnalyticsPage() {
                     <div key={pred.label} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span>{pred.icon}</span>
-                        <span className="text-sm text-slate-700">{pred.label}</span>
+                        <span className="text-sm text-black">{pred.label}</span>
                       </div>
                       <div className="text-right">
                         <div className="font-bold text-slate-900 text-sm">{pred.value}</div>
-                        <div className="text-xs text-slate-500">{pred.conf} conf.</div>
+                        <div className="text-xs text-black">{pred.conf} conf.</div>
                       </div>
                     </div>
                   ))}
@@ -300,13 +322,13 @@ export default function AnalyticsPage() {
                     className="p-4 glass rounded-xl border border-white/5 hover:border-indigo-500/30 cursor-grab active:cursor-grabbing transition-all group"
                   >
                     <div className="flex items-center gap-3">
-                      <GripHorizontal className="w-4 h-4 text-slate-600 group-hover:text-slate-400" />
+                      <GripHorizontal className="w-4 h-4 text-black group-hover:text-black" />
                       <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center">
                         <Icon className="w-4 h-4 text-indigo-400" />
                       </div>
                       <div>
                         <div className="text-sm font-bold text-slate-900">{widget.title}</div>
-                        <div className="text-xs text-slate-500">{widget.desc}</div>
+                        <div className="text-xs text-black">{widget.desc}</div>
                       </div>
                     </div>
                   </div>
@@ -315,8 +337,8 @@ export default function AnalyticsPage() {
             </div>
 
             <div className="mt-6 p-8 border-2 border-dashed border-white/10 rounded-xl text-center">
-              <div className="text-slate-500 text-sm mb-2">Canvas Area</div>
-              <div className="text-slate-600 text-xs">Drag widgets here to build your dashboard</div>
+              <div className="text-black text-sm mb-2">Canvas Area</div>
+              <div className="text-black text-xs">Drag widgets here to build your dashboard</div>
             </div>
           </div>
         </div>

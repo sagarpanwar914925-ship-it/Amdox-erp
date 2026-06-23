@@ -11,7 +11,7 @@ import {
 import { getInitials, getStatusColor, formatDate } from "@/lib/utils";
 import { Modal } from "@/components/ui/modal";
 
-const EMPLOYEES = [
+const INITIAL_EMPLOYEES = [
   { id: "EMP-001", name: "Sarah Williams", email: "sarah.w@acme.com", phone: "+1 555 0101", dept: "Engineering", designation: "Senior Engineer", type: "FULL_TIME", status: "ACTIVE", join: "2022-03-15", salary: 95000, avatar: null, location: "New York" },
   { id: "EMP-002", name: "James Chen", email: "james.c@acme.com", phone: "+1 555 0102", dept: "Marketing", designation: "Marketing Manager", type: "FULL_TIME", status: "ACTIVE", join: "2021-07-01", salary: 78000, avatar: null, location: "San Francisco" },
   { id: "EMP-003", name: "Priya Sharma", email: "priya.s@acme.com", phone: "+1 555 0103", dept: "Finance", designation: "Finance Analyst", type: "FULL_TIME", status: "ACTIVE", join: "2023-01-10", salary: 72000, avatar: null, location: "Chicago" },
@@ -57,12 +57,38 @@ export default function HRPage() {
     setActiveTab(tab);
     router.push(`/dashboard/hr?tab=${tab}`);
   };
+
+  const [employees, setEmployees] = useState(INITIAL_EMPLOYEES);
+  const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
+  const [payrollRecords, setPayrollRecords] = useState<any[]>([]);
+  const [attendanceToday, setAttendanceToday] = useState<any[]>([]);
+
+  useEffect(() => {
+    import("@/app/actions/hr").then(async (actions) => {
+      try {
+        const [emps, atts, leaves, payrolls] = await Promise.all([
+          actions.getEmployees(),
+          actions.getAttendanceToday(),
+          actions.getLeaveRequests(),
+          actions.getPayrollRecords()
+        ]);
+        if (emps && emps.length > 0) setEmployees(emps);
+        // Leave defaults for others down below by setting state conditionally
+        if (atts && atts.length > 0) setAttendanceToday(atts);
+        if (leaves && leaves.length > 0) setLeaveRequests(leaves);
+        if (payrolls && payrolls.length > 0) setPayrollRecords(payrolls);
+      } catch (err) {
+        console.error("Failed to fetch hr data:", err);
+      }
+    });
+  }, []);
+
   const [search, setSearch] = useState("");
   const [selectedDept, setSelectedDept] = useState("All");
 
   const DEPARTMENTS = ["All", "Engineering", "Marketing", "Finance", "Sales", "HR", "Operations", "Supply Chain"];
 
-  const filtered = EMPLOYEES.filter((emp) => {
+  const filtered = employees.filter((emp) => {
     const matchSearch =
       emp.name.toLowerCase().includes(search.toLowerCase()) ||
       emp.email.toLowerCase().includes(search.toLowerCase());
@@ -78,21 +104,21 @@ export default function HRPage() {
     { id: "performance", label: "Performance" },
   ] as const;
 
-  const LEAVE_REQUESTS = [
+  const INITIAL_LEAVE_REQUESTS = [
     { emp: "Emily Davis", type: "Annual Leave", from: "Dec 20", to: "Dec 27", days: 5, status: "PENDING" },
     { emp: "James Chen", type: "Sick Leave", from: "Dec 10", to: "Dec 11", days: 2, status: "APPROVED" },
     { emp: "Robert Kim", type: "Annual Leave", from: "Jan 2", to: "Jan 5", days: 3, status: "PENDING" },
     { emp: "Priya Sharma", type: "Maternity Leave", from: "Jan 15", to: "Apr 15", days: 90, status: "APPROVED" },
   ];
 
-  const PAYROLL_RECORDS = [
+  const INITIAL_PAYROLL_RECORDS = [
     { period: "Nov 2024", employees: 248, gross: 2840000, deductions: 620000, net: 2220000, status: "PAID" },
     { period: "Oct 2024", employees: 245, gross: 2810000, deductions: 615000, net: 2195000, status: "PAID" },
     { period: "Sep 2024", employees: 242, gross: 2780000, deductions: 608000, net: 2172000, status: "PAID" },
     { period: "Dec 2024", employees: 248, gross: 2860000, deductions: 625000, net: 2235000, status: "PROCESSING" },
   ];
 
-  const ATTENDANCE_TODAY = [
+  const INITIAL_ATTENDANCE_TODAY = [
     { emp: "Sarah Williams", clockIn: "09:02 AM", clockOut: "--", status: "PRESENT", hrs: "5h 45m" },
     { emp: "James Chen", clockIn: "08:55 AM", clockOut: "--", status: "PRESENT", hrs: "5h 52m" },
     { emp: "Emily Davis", clockIn: "--", clockOut: "--", status: "ON_LEAVE", hrs: "0" },
@@ -124,7 +150,7 @@ export default function HRPage() {
                 <Icon className="w-5 h-5 text-white" />
               </div>
               <div className="text-2xl font-extrabold text-slate-900">{kpi.value}</div>
-              <div className="text-sm text-slate-600 mt-1">{kpi.title}</div>
+              <div className="text-sm text-black mt-1">{kpi.title}</div>
               <div className={`text-xs font-semibold mt-1 flex items-center gap-1 ${kpi.up ? "text-emerald-400" : "text-red-400"}`}>
                 <ArrowUpRight className="w-3 h-3" />{kpi.change}
               </div>
@@ -140,7 +166,7 @@ export default function HRPage() {
             key={tab.id}
             onClick={() => handleTabChange(tab.id as any)}
             className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
-              activeTab === tab.id ? "gradient-brand text-white shadow" : "text-slate-600 hover:text-slate-900"
+              activeTab === tab.id ? "gradient-brand text-white shadow" : "text-black hover:text-slate-900"
             }`}
           >
             {tab.label}
@@ -153,7 +179,7 @@ export default function HRPage() {
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
               <input
                 type="text"
                 placeholder="Search employees..."
@@ -170,7 +196,7 @@ export default function HRPage() {
                   className={`px-3 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
                     selectedDept === dept
                       ? "gradient-brand text-white shadow-sm"
-                      : "bg-white border border-slate-200 text-slate-600 hover:text-slate-900"
+                      : "bg-white border border-slate-200 text-black hover:text-slate-900"
                   }`}
                 >
                   {dept}
@@ -202,7 +228,7 @@ export default function HRPage() {
                         </div>
                         <div>
                           <div className="font-semibold text-slate-900 text-sm">{emp.name}</div>
-                          <div className="text-xs text-slate-500">{emp.email}</div>
+                          <div className="text-xs text-black">{emp.email}</div>
                         </div>
                       </div>
                     </td>
@@ -211,9 +237,9 @@ export default function HRPage() {
                         {emp.dept}
                       </span>
                     </td>
-                    <td className="text-slate-700 text-sm">{emp.designation}</td>
-                    <td className="text-slate-600 text-sm">{emp.type.replace("_", " ")}</td>
-                    <td className="text-slate-600 text-sm">{emp.join}</td>
+                    <td className="text-black text-sm">{emp.designation}</td>
+                    <td className="text-black text-sm">{emp.type.replace("_", " ")}</td>
+                    <td className="text-black text-sm">{emp.join}</td>
                     <td>
                       <span className={`badge ${getStatusColor(emp.status)}`}>
                         {emp.status.replace("_", " ")}
@@ -246,12 +272,12 @@ export default function HRPage() {
               ].map((stat) => (
                 <div key={stat.label} className="text-center">
                   <div className={`text-xl font-extrabold ${stat.color}`}>{stat.value}</div>
-                  <div className="text-xs text-slate-500">{stat.label}</div>
+                  <div className="text-xs text-black">{stat.label}</div>
                 </div>
               ))}
             </div>
             <div className="text-right">
-              <div className="text-sm text-slate-600">Today</div>
+              <div className="text-sm text-black">Today</div>
               <div className="text-lg font-bold text-slate-900">Dec 7, 2024</div>
             </div>
           </div>
@@ -268,11 +294,11 @@ export default function HRPage() {
                 </tr>
               </thead>
               <tbody>
-                {ATTENDANCE_TODAY.map((att) => (
+                {(attendanceToday.length > 0 ? attendanceToday : INITIAL_ATTENDANCE_TODAY).map((att) => (
                   <tr key={att.emp}>
                     <td className="font-medium text-slate-900">{att.emp}</td>
-                    <td className="font-mono text-sm text-slate-700">{att.clockIn}</td>
-                    <td className="font-mono text-sm text-slate-600">{att.clockOut}</td>
+                    <td className="font-mono text-sm text-black">{att.clockIn}</td>
+                    <td className="font-mono text-sm text-black">{att.clockOut}</td>
                     <td>
                       <span className={`badge ${getStatusColor(att.status)}`}>{att.status.replace("_", " ")}</span>
                     </td>
@@ -306,12 +332,12 @@ export default function HRPage() {
                 </tr>
               </thead>
               <tbody>
-                {LEAVE_REQUESTS.map((req, i) => (
+                {(leaveRequests.length > 0 ? leaveRequests : INITIAL_LEAVE_REQUESTS).map((req, i) => (
                   <tr key={i}>
                     <td className="font-medium text-slate-900">{req.emp}</td>
-                    <td className="text-slate-700">{req.type}</td>
-                    <td className="text-slate-600">{req.from}</td>
-                    <td className="text-slate-600">{req.to}</td>
+                    <td className="text-black">{req.type}</td>
+                    <td className="text-black">{req.from}</td>
+                    <td className="text-black">{req.to}</td>
                     <td className="font-bold text-slate-900">{req.days}</td>
                     <td><span className={`badge ${getStatusColor(req.status)}`}>{req.status}</span></td>
                     <td>
@@ -351,10 +377,10 @@ export default function HRPage() {
                 </tr>
               </thead>
               <tbody>
-                {PAYROLL_RECORDS.map((pr) => (
+                {(payrollRecords.length > 0 ? payrollRecords : INITIAL_PAYROLL_RECORDS).map((pr) => (
                   <tr key={pr.period}>
                     <td className="font-semibold text-slate-900">{pr.period}</td>
-                    <td className="text-right text-slate-700">{pr.employees}</td>
+                    <td className="text-right text-black">{pr.employees}</td>
                     <td className="text-right font-mono text-slate-900">${(pr.gross / 1000).toFixed(0)}K</td>
                     <td className="text-right font-mono text-red-400">-${(pr.deductions / 1000).toFixed(0)}K</td>
                     <td className="text-right font-bold text-emerald-400">${(pr.net / 1000).toFixed(0)}K</td>
@@ -376,7 +402,7 @@ export default function HRPage() {
       {/* Performance Tab */}
       {activeTab === "performance" && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {EMPLOYEES.slice(0, 6).map((emp) => {
+          {employees.slice(0, 6).map((emp) => {
             const score = 3.5 + Math.random() * 1.5;
             const pct = (score / 5) * 100;
             return (
@@ -387,12 +413,12 @@ export default function HRPage() {
                   </div>
                   <div>
                     <div className="font-bold text-slate-900 text-sm">{emp.name}</div>
-                    <div className="text-xs text-slate-500">{emp.designation}</div>
+                    <div className="text-xs text-black">{emp.designation}</div>
                   </div>
                 </div>
                 <div className="mb-3">
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-slate-600">Overall Score</span>
+                    <span className="text-black">Overall Score</span>
                     <span className="font-bold text-slate-900">{score.toFixed(1)}/5.0</span>
                   </div>
                   <div className="progress-bar">
@@ -405,7 +431,7 @@ export default function HRPage() {
                 {["Goals", "Skills", "Collaboration"].map((cat) => {
                   const val = 60 + Math.random() * 40;
                   return (
-                    <div key={cat} className="flex justify-between text-xs text-slate-500 mb-1">
+                    <div key={cat} className="flex justify-between text-xs text-black mb-1">
                       <span>{cat}</span>
                       <span className="text-slate-900 font-semibold">{val.toFixed(0)}%</span>
                     </div>
@@ -431,40 +457,40 @@ export default function HRPage() {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-slate-900">{viewItem.data.name}</h3>
-                <p className="text-slate-500 text-sm">{viewItem.data.email}</p>
+                <p className="text-black text-sm">{viewItem.data.email}</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Employee ID</p>
+                <p className="text-xs text-black mb-1">Employee ID</p>
                 <p className="font-semibold font-mono">{viewItem.data.id}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Status</p>
+                <p className="text-xs text-black mb-1">Status</p>
                 <p className="font-semibold">{viewItem.data.status.replace("_", " ")}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Department</p>
+                <p className="text-xs text-black mb-1">Department</p>
                 <p className="font-semibold">{viewItem.data.dept}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Designation</p>
+                <p className="text-xs text-black mb-1">Designation</p>
                 <p className="font-semibold">{viewItem.data.designation}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Employment Type</p>
+                <p className="text-xs text-black mb-1">Employment Type</p>
                 <p className="font-semibold">{viewItem.data.type.replace("_", " ")}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Location</p>
+                <p className="text-xs text-black mb-1">Location</p>
                 <p className="font-semibold">{viewItem.data.location}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Phone</p>
+                <p className="text-xs text-black mb-1">Phone</p>
                 <p className="font-semibold">{viewItem.data.phone}</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Joined Date</p>
+                <p className="text-xs text-black mb-1">Joined Date</p>
                 <p className="font-semibold">{viewItem.data.join}</p>
               </div>
             </div>
@@ -485,19 +511,19 @@ export default function HRPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Employees Processed</p>
+                <p className="text-xs text-black mb-1">Employees Processed</p>
                 <p className="font-semibold">{viewItem.data.employees}</p>
               </div>
               <div className="col-span-2 p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Gross Pay</p>
+                <p className="text-xs text-black mb-1">Gross Pay</p>
                 <p className="font-bold text-lg text-slate-900">${(viewItem.data.gross).toLocaleString()}</p>
               </div>
               <div className="col-span-2 p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-500 mb-1">Deductions</p>
+                <p className="text-xs text-black mb-1">Deductions</p>
                 <p className="font-bold text-lg text-red-500">-${(viewItem.data.deductions).toLocaleString()}</p>
               </div>
               <div className="col-span-2 p-3 bg-slate-50 rounded-lg border-t-2 border-emerald-200">
-                <p className="text-xs text-slate-500 mb-1">Net Pay</p>
+                <p className="text-xs text-black mb-1">Net Pay</p>
                 <p className="font-bold text-xl text-emerald-600">${(viewItem.data.net).toLocaleString()}</p>
               </div>
             </div>

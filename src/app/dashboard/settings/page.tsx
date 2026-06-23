@@ -98,7 +98,7 @@ export default function SettingsPage() {
                   {profileImage ? (
                     <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
-                    <User className="w-8 h-8 text-slate-400" />
+                    <User className="w-8 h-8 text-black" />
                   )}
                   <div className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center transition-all">
                     <Camera className="w-6 h-6 text-white" />
@@ -106,7 +106,7 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-slate-900 mb-1">Profile Picture</h4>
-                  <p className="text-xs text-slate-500 mb-3">Upload a high-res image (max 5MB).</p>
+                  <p className="text-xs text-black mb-3">Upload a high-res image (max 5MB).</p>
                   <button onClick={() => fileInputRef.current?.click()} className="btn btn-secondary btn-sm">
                     <Upload className="w-4 h-4" /> Choose File
                   </button>
@@ -116,7 +116,7 @@ export default function SettingsPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">Full Name</label>
+                  <label className="block text-sm font-semibold text-black mb-1">Full Name</label>
                   <input 
                     type="text" 
                     className="form-input w-full" 
@@ -125,11 +125,11 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">Email Address</label>
+                  <label className="block text-sm font-semibold text-black mb-1">Email Address</label>
                   <input type="email" defaultValue={session?.user?.email || ""} disabled className="form-input w-full bg-slate-50 cursor-not-allowed" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">Role</label>
+                  <label className="block text-sm font-semibold text-black mb-1">Role</label>
                   <input type="text" className="form-input w-full bg-slate-50 cursor-not-allowed" disabled value={userRole.replace("_", " ")} />
                 </div>
               </div>
@@ -137,15 +137,15 @@ export default function SettingsPage() {
           ) : activeModule === "Security" ? (
             <div className="max-w-2xl space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Current Password</label>
+                <label className="block text-sm font-semibold text-black mb-1">Current Password</label>
                 <input type="password" className="form-input w-full" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">New Password</label>
+                <label className="block text-sm font-semibold text-black mb-1">New Password</label>
                 <input type="password" className="form-input w-full" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Confirm New Password</label>
+                <label className="block text-sm font-semibold text-black mb-1">Confirm New Password</label>
                 <input type="password" className="form-input w-full" />
               </div>
             </div>
@@ -154,19 +154,19 @@ export default function SettingsPage() {
               <h4 className="font-semibold text-slate-900 mb-2">Notification Preferences</h4>
               <label className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg cursor-pointer">
                 <input type="checkbox" defaultChecked className="rounded text-indigo-600 w-4 h-4" />
-                <span className="text-sm font-medium text-slate-700">Email Notifications for tasks and mentions</span>
+                <span className="text-sm font-medium text-black">Email Notifications for tasks and mentions</span>
               </label>
               <label className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg cursor-pointer">
                 <input type="checkbox" defaultChecked className="rounded text-indigo-600 w-4 h-4" />
-                <span className="text-sm font-medium text-slate-700">Push Notifications for important alerts</span>
+                <span className="text-sm font-medium text-black">Push Notifications for important alerts</span>
               </label>
               <label className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg cursor-pointer">
                 <input type="checkbox" className="rounded text-indigo-600 w-4 h-4" />
-                <span className="text-sm font-medium text-slate-700">Weekly Summary Emails</span>
+                <span className="text-sm font-medium text-black">Weekly Summary Emails</span>
               </label>
              </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-slate-500 py-20">
+            <div className="flex flex-col items-center justify-center h-full text-black py-20">
               <Icon className="w-12 h-12 text-slate-300 mx-auto mb-4" />
               <h3 className="text-lg font-bold text-slate-900 mb-2">{activeModule} Configuration</h3>
               <p>This module interface is under construction.</p>
@@ -199,7 +199,7 @@ export default function SettingsPage() {
                 <Icon className="w-6 h-6 text-indigo-600" />
               </div>
               <h3 className="font-bold text-slate-900 mb-2">{mod.title}</h3>
-              <p className="text-sm text-slate-600">{mod.desc}</p>
+              <p className="text-sm text-black">{mod.desc}</p>
             </div>
           );
         })}
